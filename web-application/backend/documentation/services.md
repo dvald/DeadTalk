@@ -41,61 +41,6 @@ Note: When adding new services, remember to update this document.
 
 Here is a list of existing services with a brief explanation on their function and usage.
 
-### Blockchain events scan service
-
-Location: [src/services/blockchain-events-scan.ts](../src/services/blockchain-events-scan.ts).
-
-The blockchain events scan service is used to scan the blockchain in order to find events, and index them in the database for easier access for the controllers.
-
-Inside the `scan` method, you must add asynchronous calls to methods that scan the events of all the smart contracts you need, here is an example:
-
-```ts
-// ...
-export class BlockchainEventsScanner {
-    // ...
-    private async scan() {
-        // ...
-        // Add scanning methods below this line
-        await this.scanEventsExampleContract(rangeStart, rangeEnd);
-
-        this.currentBlock = rangeEnd;
-        // ...
-    }
-
-    private async scanEventsExampleContract(fromBlock: bigint, toBlock: bigint) {
-        const events = await BlockchainConfig.getExampleSmartContract().findEvents(fromBlock, toBlock);
-
-        this.logEvents(events.events);
-
-        for (let i = 0; i < events.length(); i++) {
-            const eventType = events.getEventType(i);
-            switch (eventType) {
-                case "ExampleEvent":
-                    {
-                        const ev = events.getExampleEvent(i);
-                        const timestamp = await this.getBlockTimestamp(ev.event.log.blockNumber);
-                        // Handle event. Eg: Store in database
-                        // ...
-                    }
-                    break;
-            }
-        }
-    }
-}
-```
-
-### Blockchain service
-
-Location: [src/services/blockchain-service.ts](../src/services/blockchain-service.ts).
-
-The Blockchain service is used to encapsulate interaction logic with the blockchain, for example:
-
- - Handle wallets
- - Make transaction options
- - Obtains smart contract wrappers
-
-For smart contract wrappers, bytecodes or other smart contract tools, use the [src/contracts](../src/contracts/) folder.
-
 ### Captcha service
 
 Location: [src/services/captcha-service.ts](../src/services/captcha-service.ts).

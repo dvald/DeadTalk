@@ -143,9 +143,9 @@
         :hasContainer="true"
         :title="isFilteredEmpty ? $t('No results found') : $t('No users available')"
         :description="
-            isFilteredEmpty ? $t('Try adjusting your filtering settings') : $t('There are currently no Ethereum blocks to display.')
+            isFilteredEmpty ? $t('Try adjusting your filtering settings') : $t('There are currently no users to display.')
         "
-        :icon="isFilteredEmpty ? 'mdi:magnify' : 'mdi:ethereum'"
+        :icon="isFilteredEmpty ? 'mdi:magnify' : 'mdi:account-group-outline'"
     />
 
     <DangerModalDialog

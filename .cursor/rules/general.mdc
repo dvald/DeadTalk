@@ -34,14 +34,8 @@ This document provides the general development rules that must be followed throu
 - **Language:** TypeScript
 - **ORM:** tsbean-orm (multi-database)
 - **Cache/Messaging:** Redis
-- **Blockchain Interaction:** Ethers.js and @asanrom/smart-contract-wrapper
 - **Authentication:** Database-backed session tokens
 - **Email:** Nodemailer
-
-### Smart Contracts (`smart-contracts`)
-- **Language:** Solidity
-- **Framework:** Hardhat
-- **Libraries:** Ethers.js, TypeChain, @asanrom/smart-contract-wrapper
 
 ### Mobile Application (`mobile-application`)
 - **Framework:** React Native with Expo
