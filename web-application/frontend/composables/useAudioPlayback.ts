@@ -99,7 +99,6 @@ export function useAudioPlayback() {
             processingQueue = false;
             if (playbackQueue.length > 0) {
                 void processQueue();
-                return;
             }
             if (!currentSource && playbackQueue.length === 0) {
                 isPlaying.value = false;
@@ -117,7 +116,7 @@ export function useAudioPlayback() {
         if (currentSource) {
             try {
                 currentSource.stop();
-            } catch (_e) {
+            } catch {
                 // Ignore if already stopped
             }
             currentSource = null;

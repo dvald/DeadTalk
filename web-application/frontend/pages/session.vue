@@ -138,7 +138,7 @@ definePageMeta({
 
 const route = useRoute();
 const router = useRouter();
-const { t } = useI18n();
+const { t: _t } = useI18n();
 const localePath = useLocalePath();
 
 // Store
@@ -181,7 +181,7 @@ const {
 } = useOrchestratorSocket();
 
 // Audio playback
-const { isPlaying: isAgentPlaying, playChunk, stopPlayback } = useAudioPlayback();
+const { isPlaying: _isAgentPlaying, playChunk, stopPlayback } = useAudioPlayback();
 
 // Voice input (VAD)
 const { isListening, isSpeaking, startListening, stopListening } = useVoiceInput((msg: any) => {

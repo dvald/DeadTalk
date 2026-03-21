@@ -1,6 +1,6 @@
 // App preferences
 
-import { fetchFromLocalStorage, fetchFromLocalStorageCache, saveIntoLocalStorage } from "@/utils/local-storage";
+import { fetchFromLocalStorageCache, saveIntoLocalStorage } from "@/utils/local-storage";
 import { AppEvents } from "./app-events";
 
 export type ColorThemeName = "light" | "dark";

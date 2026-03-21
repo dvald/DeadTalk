@@ -64,7 +64,7 @@
 <script setup lang="ts">
 import { Request } from "@asanrom/request-browser";
 import { ApiPersonas } from "~/api/api-group-personas";
-import type { PersonaSummary } from "~/models/session";
+import type { PersonaSummary } from "~/api/definitions";
 
 definePageMeta({
     layout: "landing",
@@ -110,7 +110,7 @@ onMounted(async () => {
                 .onCancel(() => reject(new Error("List personas request cancelled")))
                 .onUnexpectedError((err) => reject(err));
         });
-    } catch (_err) {
+    } catch {
         // Fallback: hardcoded personas
         personas.value = [
             {

@@ -142,9 +142,7 @@
         v-if="isEmpty || isFilteredEmpty"
         :hasContainer="true"
         :title="isFilteredEmpty ? $t('No results found') : $t('No users available')"
-        :description="
-            isFilteredEmpty ? $t('Try adjusting your filtering settings') : $t('There are currently no users to display.')
-        "
+        :description="isFilteredEmpty ? $t('Try adjusting your filtering settings') : $t('There are currently no users to display.')"
         :icon="isFilteredEmpty ? 'mdi:magnify' : 'mdi:account-group-outline'"
     />
 

@@ -78,7 +78,7 @@ export function useVoiceInput(sendMessage: (msg: any) => void) {
         if (vadInstance) {
             try {
                 vadInstance.destroy();
-            } catch (_e) {
+            } catch {
                 // Ignore cleanup errors
             }
             vadInstance = null;

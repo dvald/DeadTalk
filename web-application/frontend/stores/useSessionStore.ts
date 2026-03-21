@@ -1,4 +1,5 @@
-import type { Agent, PersonaSummary, SessionStatus, SessionMode } from "~/models/session";
+import type { Agent, SessionStatus, SessionMode } from "~/models/session";
+import type { PersonaSummary } from "~/api/definitions";
 import type { SourceCard } from "~/models/source-card";
 
 export const useSessionStore = defineStore("session", () => {
