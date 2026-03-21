@@ -6,8 +6,11 @@
 @import "./theme/colors.css";
 @import "./theme/ui-theme.css";
 @import "./defaults.css";
+@import "./seance-effects.css";
 
 @theme {
+    /* Séance heading font */
+    --font-heading: "Playfair Display", serif;
     /* Disables Tailwind default colors */
     /* --color-*: initial; */
 

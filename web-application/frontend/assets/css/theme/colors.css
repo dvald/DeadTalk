@@ -1,6 +1,6 @@
-/* Color schemes*/
+/* Color schemes — Dark Séance Theme */
 :root {
-    /* Amber */
+    /* Amber (warning — unchanged) */
     --amber-100: #fef3c6;
     --amber-200: #fee685;
     --amber-300: #ffd230;
@@ -13,7 +13,7 @@
     --amber-900: #7a3306;
     --amber-950: #461901;
 
-    /* Coral red */
+    /* Coral red (danger — unchanged) */
     --coral-red-100: #fee2e2;
     --coral-red-200: #fecaca;
     --coral-red-300: #fca5a5;
@@ -26,20 +26,20 @@
     --coral-red-900: #7f1d1d;
     --coral-red-950: #450a0a;
 
-    /* Dark blue */
-    --dark-blue-100: #dae4ff;
-    --dark-blue-200: #bbcdff;
-    --dark-blue-300: #93abff;
-    --dark-blue-400: #687cff;
-    --dark-blue-50: #eaf1ff;
-    --dark-blue-500: #454fff;
-    --dark-blue-600: #2b25ff;
-    --dark-blue-700: #2319e9;
-    --dark-blue-800: #1c17b4;
-    --dark-blue-900: #1e1d92;
-    --dark-blue-950: #131155;
+    /* Antique Gold (primary brand — was dark blue) */
+    --dark-blue-100: #faefd0;
+    --dark-blue-200: #f5d78e;
+    --dark-blue-300: #e8c35a;
+    --dark-blue-400: #d4a853;
+    --dark-blue-50: #fdf8ed;
+    --dark-blue-500: #c49a3d;
+    --dark-blue-600: #a67c2e;
+    --dark-blue-700: #8a6424;
+    --dark-blue-800: #6e4e1c;
+    --dark-blue-900: #573d16;
+    --dark-blue-950: #3a280e;
 
-    /* Emerald */
+    /* Emerald (success — unchanged) */
     --emerald-100: #dcfce8;
     --emerald-200: #bbf7d1;
     --emerald-300: #86efad;
@@ -52,20 +52,20 @@
     --emerald-900: #14532b;
     --emerald-950: #052e14;
 
-    /* Gray */
-    --gray-100: #efefef;
-    --gray-200: #dcdcdc;
-    --gray-300: #bdbdbd;
-    --gray-400: #989898;
-    --gray-50: #f9fafb;
-    --gray-500: #7c7c7c;
-    --gray-600: #656565;
-    --gray-700: #525252;
-    --gray-800: #464646;
-    --gray-900: #3d3d3d;
-    --gray-950: #292929;
+    /* Séance Gray (warm-tinted — was gray) */
+    --gray-100: #e8e0d4;
+    --gray-200: #d0c8bc;
+    --gray-300: #b0a898;
+    --gray-400: #8a8278;
+    --gray-50: #f5f3f1;
+    --gray-500: #6e665c;
+    --gray-600: #584f46;
+    --gray-700: #443b34;
+    --gray-800: #332b25;
+    --gray-900: #231d18;
+    --gray-950: #0a0a0f;
 
-    /* Prussian blue */
+    /* Prussian blue (info — unchanged) */
     --prussian-blue-100: #dff2ff;
     --prussian-blue-200: #b8e6ff;
     --prussian-blue-300: #79d2ff;
@@ -78,29 +78,29 @@
     --prussian-blue-900: #094a71;
     --prussian-blue-950: #073657;
 
-    /* Purlple heart */
-    --purple-heart-100: #f6e6ff;
-    --purple-heart-200: #eed2ff;
-    --purple-heart-300: #e1aeff;
-    --purple-heart-400: #cf7bff;
-    --purple-heart-50: #fbf4ff;
-    --purple-heart-500: #bd49ff;
-    --purple-heart-600: #ad25f8;
-    --purple-heart-700: #9615db;
-    --purple-heart-800: #8017b5;
-    --purple-heart-900: #67148f;
-    --purple-heart-950: #48006b;
+    /* Dusty Lavender (secondary brand — was purple heart) */
+    --purple-heart-100: #e8e3ed;
+    --purple-heart-200: #d4cdd9;
+    --purple-heart-300: #b5acbe;
+    --purple-heart-400: #9689a3;
+    --purple-heart-50: #f5f3f7;
+    --purple-heart-500: #7e7189;
+    --purple-heart-600: #6b6578;
+    --purple-heart-700: #574f63;
+    --purple-heart-800: #443d4e;
+    --purple-heart-900: #332d3a;
+    --purple-heart-950: #211d27;
 
-    /* Wild blue yonder */
-    --wild-blue-yonder-100: #eaeef5;
-    --wild-blue-yonder-200: #d9e1ec;
-    --wild-blue-yonder-300: #c1cce0;
-    --wild-blue-yonder-400: #a7b4d2;
-    --wild-blue-yonder-50: #f3f6fa;
-    --wild-blue-yonder-500: #919cc3;
-    --wild-blue-yonder-600: #747daf;
-    --wild-blue-yonder-700: #676e9b;
-    --wild-blue-yonder-800: #555c7e;
-    --wild-blue-yonder-900: #494e66;
-    --wild-blue-yonder-950: #2a2d3c;
+    /* Séance Neutral (indigo-tinted — was wild blue yonder) */
+    --wild-blue-yonder-100: #e8e0d4;
+    --wild-blue-yonder-200: #c4bab0;
+    --wild-blue-yonder-300: #9e9490;
+    --wild-blue-yonder-400: #7a7274;
+    --wild-blue-yonder-50: #f0ede8;
+    --wild-blue-yonder-500: #5c5559;
+    --wild-blue-yonder-600: #444048;
+    --wild-blue-yonder-700: #332f38;
+    --wild-blue-yonder-800: #242028;
+    --wild-blue-yonder-900: #1a1720;
+    --wild-blue-yonder-950: #141420;
 }

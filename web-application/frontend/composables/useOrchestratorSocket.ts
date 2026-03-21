@@ -116,7 +116,7 @@ export function useOrchestratorSocket() {
                     const state = agentStates.value.get(msg.agentId);
                     if (state) {
                         state.speaking = false;
-                        state.audioTag = "";
+                        // Keep audioTag — the frontend clears it when audio playback actually ends
                         agentStates.value.set(msg.agentId, state);
                         agentStates.value = new Map(agentStates.value);
                     }

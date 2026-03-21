@@ -1,16 +1,34 @@
 /**
  * Composable for real-time voice input with Voice Activity Detection (VAD).
- * Uses @ricky0123/vad-web to detect when the user speaks and stops speaking.
- * Sends audio chunks via WebSocket and triggers speech-end events.
+ * Supports two modes:
+ *   - "auto" (VAD): Automatically detects when the user speaks and stops speaking.
+ *   - "manual" (push-to-talk): Records while the user holds the button, sends on release.
+ *
+ * Also supports echo suppression by pausing VAD while the agent is playing audio.
  */
 
-export function useVoiceInput(sendMessage: (msg: any) => void) {
+import type { Ref } from "vue";
+import type { MicMode } from "~/models/session";
+
+/** Minimum audio duration in ms to consider a valid push-to-talk recording */
+const MIN_MANUAL_DURATION_MS = 300;
+
+export function useVoiceInput(sendMessage: (msg: any) => void, isAgentPlaying?: Ref<boolean>, micMode?: Ref<MicMode>) {
     const isListening = ref(false);
     const isSpeaking = ref(false);
     const error = ref<string | null>(null);
 
     let mediaStream: MediaStream | null = null;
     let vadInstance: any = null;
+
+    // Manual recording state
+    let manualRecorder: ScriptProcessorNode | null = null;
+    let manualAudioContext: AudioContext | null = null;
+    let manualSource: MediaStreamAudioSourceNode | null = null;
+    let manualSamples: Float32Array[] = [];
+    let manualStartTime = 0;
+    let manualSampleRate = 48000;
+    let isManualRecording = false;
 
     /**
      * Starts listening for voice input.
@@ -24,7 +42,6 @@ export function useVoiceInput(sendMessage: (msg: any) => void) {
             // Request microphone access
             mediaStream = await navigator.mediaDevices.getUserMedia({
                 audio: {
-                    sampleRate: 16000,
                     channelCount: 1,
                     echoCancellation: true,
                     noiseSuppression: true,
@@ -56,14 +73,19 @@ export function useVoiceInput(sendMessage: (msg: any) => void) {
                     sendMessage({ type: "audio-chunk", chunk: base64 });
                     sendMessage({ type: "speech-end" });
                 },
-                positiveSpeechThreshold: 0.8,
+                positiveSpeechThreshold: 0.85,
                 negativeSpeechThreshold: 0.4,
-                redemptionMs: 250,
+                redemptionMs: 700,
                 preSpeechPadMs: 100,
-                minSpeechMs: 150,
+                minSpeechMs: 300,
             });
 
-            vadInstance.start();
+            // Start VAD only if in auto mode (or no mode specified)
+            const currentMode = micMode?.value || "auto";
+            if (currentMode === "auto") {
+                vadInstance.start();
+            }
+
             isListening.value = true;
         } catch (err: any) {
             error.value = err.message || "Failed to access microphone";
@@ -75,6 +97,8 @@ export function useVoiceInput(sendMessage: (msg: any) => void) {
      * Stops listening and releases resources.
      */
     function stopListening() {
+        cleanupManualRecording(false);
+
         if (vadInstance) {
             try {
                 vadInstance.destroy();
@@ -93,6 +117,185 @@ export function useVoiceInput(sendMessage: (msg: any) => void) {
         isSpeaking.value = false;
     }
 
+    // ── Echo suppression: pause VAD while agent plays audio ──
+    if (isAgentPlaying) {
+        watch(isAgentPlaying, (playing) => {
+            if (!vadInstance || !isListening.value) return;
+            const currentMode = micMode?.value || "auto";
+            if (currentMode !== "auto") return;
+
+            if (playing) {
+                try {
+                    vadInstance.pause();
+                } catch {
+                    // Fallback: disable audio track
+                    if (mediaStream) {
+                        const track = mediaStream.getAudioTracks()[0];
+                        if (track) track.enabled = false;
+                    }
+                }
+            } else {
+                try {
+                    vadInstance.start();
+                } catch {
+                    // Fallback: re-enable audio track
+                    if (mediaStream) {
+                        const track = mediaStream.getAudioTracks()[0];
+                        if (track) track.enabled = true;
+                    }
+                }
+            }
+        });
+    }
+
+    // ── Mode switching: pause/resume VAD when toggling auto/manual ──
+    if (micMode) {
+        watch(micMode, (newMode, oldMode) => {
+            // If switching away from manual while recording, clean up gracefully
+            if (oldMode === "manual" && isManualRecording) {
+                cleanupManualRecording(true);
+            }
+
+            if (!vadInstance || !isListening.value) return;
+
+            if (newMode === "auto") {
+                // Resume VAD (unless agent is currently playing)
+                const agentPlaying = isAgentPlaying?.value || false;
+                if (!agentPlaying) {
+                    try {
+                        vadInstance.start();
+                    } catch {
+                        // Already running
+                    }
+                }
+            } else {
+                // Pause VAD for manual mode
+                try {
+                    vadInstance.pause();
+                } catch {
+                    // Not running
+                }
+            }
+        });
+    }
+
+    // ── Push-to-talk (manual mode) ──
+
+    /**
+     * Starts manual recording (push-to-talk).
+     * Captures raw PCM samples until stopManualRecording() is called.
+     */
+    function startManualRecording() {
+        if (!mediaStream || !isListening.value) return;
+        if (isManualRecording) return; // Already recording
+
+        manualSamples = [];
+        manualStartTime = Date.now();
+        isManualRecording = true;
+        isSpeaking.value = true;
+
+        try {
+            // Use default sample rate (browser-native) to avoid compatibility issues
+            manualAudioContext = new AudioContext();
+            manualSampleRate = manualAudioContext.sampleRate;
+            manualSource = manualAudioContext.createMediaStreamSource(mediaStream);
+
+            // ScriptProcessorNode to capture raw PCM (4096 buffer, mono)
+            manualRecorder = manualAudioContext.createScriptProcessor(4096, 1, 1);
+            manualRecorder.onaudioprocess = (event: AudioProcessingEvent) => {
+                if (!isManualRecording) return;
+                const inputData = event.inputBuffer.getChannelData(0);
+                manualSamples.push(new Float32Array(inputData));
+            };
+
+            manualSource.connect(manualRecorder);
+            manualRecorder.connect(manualAudioContext.destination);
+        } catch (err: any) {
+            isManualRecording = false;
+            isSpeaking.value = false;
+            error.value = err.message || "Failed to start manual recording";
+        }
+    }
+
+    /**
+     * Stops manual recording and sends the captured audio.
+     */
+    function stopManualRecording() {
+        cleanupManualRecording(true);
+    }
+
+    /**
+     * Cleans up manual recording resources.
+     * @param sendAudio If true, sends captured audio to the backend
+     */
+    function cleanupManualRecording(sendAudio: boolean) {
+        if (!isManualRecording && manualSamples.length === 0) return;
+
+        const duration = Date.now() - manualStartTime;
+        const samples = [...manualSamples];
+
+        // Reset state immediately
+        isManualRecording = false;
+        isSpeaking.value = false;
+        manualSamples = [];
+        manualStartTime = 0;
+
+        // Disconnect and clean up ScriptProcessorNode
+        if (manualRecorder) {
+            try {
+                manualRecorder.disconnect();
+            } catch {
+                // Ignore
+            }
+            manualRecorder = null;
+        }
+        if (manualSource) {
+            try {
+                manualSource.disconnect();
+            } catch {
+                // Ignore
+            }
+            manualSource = null;
+        }
+        if (manualAudioContext) {
+            try {
+                manualAudioContext.close();
+            } catch {
+                // Ignore
+            }
+            manualAudioContext = null;
+        }
+
+        if (!sendAudio) return;
+
+        // Check minimum duration
+        if (duration < MIN_MANUAL_DURATION_MS) return;
+
+        // Merge all captured samples into a single Float32Array
+        if (samples.length === 0) return;
+
+        const totalLength = samples.reduce((sum, arr) => sum + arr.length, 0);
+        if (totalLength === 0) return;
+
+        const merged = new Float32Array(totalLength);
+        let offset = 0;
+        for (const chunk of samples) {
+            merged.set(chunk, offset);
+            offset += chunk.length;
+        }
+
+        // Resample to 16kHz if needed (browser may give 44.1kHz or 48kHz)
+        const targetRate = 16000;
+        const resampled = manualSampleRate !== targetRate ? resampleLinear(merged, manualSampleRate, targetRate) : merged;
+
+        // Convert to WAV and send
+        const wavBuffer = float32ToWav(resampled, targetRate);
+        const base64 = arrayBufferToBase64(wavBuffer);
+
+        sendMessage({ type: "audio-chunk", chunk: base64 });
+        sendMessage({ type: "speech-end" });
+    }
+
     // Cleanup on unmount
     onBeforeUnmount(() => {
         stopListening();
@@ -104,7 +307,27 @@ export function useVoiceInput(sendMessage: (msg: any) => void) {
         error,
         startListening,
         stopListening,
+        startManualRecording,
+        stopManualRecording,
     };
+}
+
+/**
+ * Simple linear resampling from one sample rate to another.
+ */
+function resampleLinear(samples: Float32Array, fromRate: number, toRate: number): Float32Array {
+    if (fromRate === toRate) return samples;
+    const ratio = fromRate / toRate;
+    const newLength = Math.round(samples.length / ratio);
+    const result = new Float32Array(newLength);
+    for (let i = 0; i < newLength; i++) {
+        const srcIndex = i * ratio;
+        const srcFloor = Math.floor(srcIndex);
+        const srcCeil = Math.min(srcFloor + 1, samples.length - 1);
+        const frac = srcIndex - srcFloor;
+        result[i] = samples[srcFloor] * (1 - frac) + samples[srcCeil] * frac;
+    }
+    return result;
 }
 
 /**

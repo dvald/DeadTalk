@@ -1,21 +1,7 @@
 <template>
-    <ToggleButtonGroup
-        v-if="hasOnlyIcons"
-        v-model="selectedTheme"
-        :buttons="themeToggleIconButtons"
-        :hasButtonBorder="false"
-        onlyIcon
-        :class="customClass"
-    />
-    <ToggleButtonsGroupField
-        v-else
-        id="theme"
-        v-model="selectedTheme"
-        :buttons="themeToggleButtons"
-        :hasButtonBorder="false"
-        :label="showLabel ? (label ? label : $t('Theme')) : undefined"
-        :class="customClass"
-    />
+    <div>
+        <!-- Theme toggle hidden: dark séance theme is always active -->
+    </div>
 </template>
 <script setup lang="ts">
 // Props
@@ -34,9 +20,9 @@ defineProps({
 
 // Stores
 const themeStore = useThemeStore();
-const { themes, selectedTheme } = storeToRefs(themeStore);
+const { themes, selectedTheme: _selectedTheme } = storeToRefs(themeStore);
 
-const themeToggleIconButtons = computed(() =>
+const _themeToggleIconButtons = computed(() =>
     themes.value.map((theme) => ({
         text: theme.text,
         icon: theme.icon,
@@ -44,7 +30,7 @@ const themeToggleIconButtons = computed(() =>
     })),
 );
 
-const themeToggleButtons = computed(() =>
+const _themeToggleButtons = computed(() =>
     themes.value.map((theme) => ({
         text: theme.text,
         value: theme.value,

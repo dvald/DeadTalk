@@ -345,9 +345,14 @@ export interface PersonaSummary {
     avatar?: string;
 
     /**
-     * Greeting message
+     * Greeting message (English)
      */
     firstMessage?: string;
+
+    /**
+     * Greeting message (Spanish)
+     */
+    firstMessageEs?: string;
 }
 
 export interface PersonaEmotionalTrigger {
@@ -394,9 +399,14 @@ export interface PersonaDetail {
     avatar?: string;
 
     /**
-     * Greeting message
+     * Greeting message (English)
      */
     firstMessage?: string;
+
+    /**
+     * Greeting message (Spanish)
+     */
+    firstMessageEs?: string;
 
     emotionalProfile?: PersonaEmotionalTrigger[];
 
