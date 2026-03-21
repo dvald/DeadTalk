@@ -1,0 +1,7 @@
+User-Agent: *
+Disallow: /login
+Disallow: /register
+Disallow: /forgot-password
+Disallow: /reset-password
+Disallow: /tfa-login
+Disallow: /app/

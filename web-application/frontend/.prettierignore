@@ -1,0 +1,26 @@
+# Build and dist
+.nuxt
+.output
+dist
+
+# Node modules
+node_modules
+
+# Lock and config
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
+
+# Static files or external content
+public
+static
+
+# Ignore IDE settings
+.vscode
+.idea
+
+## Template
+control
+api
+content
+

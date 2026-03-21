@@ -1,0 +1,16 @@
+{
+    "folders": [
+        {
+            "path": ".",
+        },
+    ],
+    "settings": {
+        "files.exclude": {
+            "node_modules/**": true,
+            "dist/**": true,
+            ".nuxt/**": true,
+            ".data/**": true,
+            ".output/**": true,
+        },
+    },
+}

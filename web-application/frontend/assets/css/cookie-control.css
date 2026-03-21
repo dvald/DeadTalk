@@ -1,0 +1,125 @@
+@import "./theme/ui-theme.css";
+
+.cookieControl {
+    .cookieControl__Bar {
+        font-family: "Inter", sans-serif !important;
+
+        .cookieControl__BarContainer {
+            gap: 1.5rem;
+
+            p {
+                font-size: 0.875rem;
+            }
+        }
+    }
+
+    .cookieControl__Bar,
+    .cookieControl__ModalButtons {
+        button {
+            padding: 8px 12px;
+            font-size: 0.875rem;
+            border-radius: 4px;
+        }
+    }
+
+    .cookieControl__ModalContent {
+        border-radius: 12px;
+        overflow-y: auto;
+
+        .cookieControl__ModalContentInner {
+            font-family: "Inter", sans-serif !important;
+            padding: 1rem;
+
+            h2 {
+                font-size: 1.25rem;
+                font-weight: 600;
+            }
+
+            .cookieControl__ModalClose {
+                position: absolute;
+
+                padding: 4px 8px;
+                font-size: 0.875rem;
+                border-radius: 4px;
+                border: 1px solid #d9e1ec;
+                background: transparent;
+                color: #2a2d3c;
+
+                &:hover {
+                    background-color: #eaeef5;
+                }
+            }
+
+            .cookieControl__ModalButtons {
+                gap: 0.5rem;
+
+                button {
+                    background: none;
+                    border: 1px solid #d9e1ec;
+                    color: #2a2d3c;
+
+                    &:hover {
+                        background-color: #eaeef5;
+                    }
+                }
+
+                button:nth-child(2) {
+                    background: #2a2d3c;
+                    color: white;
+
+                    &:hover {
+                        background-color: #555c7e;
+                    }
+                }
+            }
+
+            /* Switches */
+            .cookieControl__ModalInputWrapper {
+                input {
+                    /* Base button styles */
+                    & + button {
+                        transition:
+                            background-color 0.2s ease,
+                            color 0.2s ease,
+                            opacity 0.2s ease;
+                        border: none;
+                        padding: 0.5rem 1rem;
+                    }
+
+                    /* Checked */
+                    &:checked + button {
+                        background-color: #4caf50;
+                    }
+
+                    /* Unchecked */
+                    &:not(:checked) + button {
+                        background-color: #ddd;
+                    }
+
+                    /* Disabled + Checked */
+                    &:checked:disabled + button {
+                        background-color: #66b768;
+                        opacity: 0.6;
+                        cursor: not-allowed;
+                    }
+
+                    /* Disabled + Unchecked */
+                    &:not(:checked):disabled + button {
+                        background-color: #e0e0e0;
+                        opacity: 0.6;
+                        cursor: not-allowed;
+                    }
+                }
+            }
+        }
+
+        .cookieControl__ModalCookieName {
+            font-size: 0.875rem !important;
+        }
+    }
+}
+
+/* Hides the floating button*/
+.cookieControl__ControlButton {
+    display: none;
+}

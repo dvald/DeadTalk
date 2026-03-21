@@ -1,0 +1,50 @@
+{
+    "name": "dlt-project-template",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "build": "nuxt generate",
+        "dev": "nuxt dev",
+        "start": "nuxt dev",
+        "preview": "nuxt preview",
+        "postinstall": "nuxt prepare",
+        "test": "prettier --check . && eslint && nuxt typecheck",
+        "generate-theme": "ts-node scripts/generate-theme.ts",
+        "update-theme-colors": "ts-node scripts/update-ui-theme-colors.ts",
+        "update-locales": "npm run update-translations",
+        "update-translations": "node scripts/translate-file-maker.cjs",
+        "apply-missing-translations": "node scripts/apply-missing-translations.cjs",
+        "update-design-system": "npm i @imaginario27/air-ui-ds@latest @imaginario27/air-ui-utils@latest",
+        "lint": "prettier --write . && eslint --fix",
+        "typecheck": "nuxt typecheck",
+        "prettier": "prettier --write .",
+        "prettier-check": "prettier --check .",
+        "backend": "npm start --prefix ../backend"
+    },
+    "dependencies": {
+        "@asanrom/request-browser": "1.0.5",
+        "@dargmuesli/nuxt-cookie-control": "9.1.16",
+        "@imaginario27/air-ui-ds": "^1.1.8",
+        "@imaginario27/air-ui-utils": "^1.0.7",
+        "@nuxt/content": "3.11.2",
+        "@nuxt/icon": "2.2.1",
+        "@nuxt/image": "2.0.0",
+        "@nuxtjs/i18n": "10.2.3",
+        "@pinia/nuxt": "0.11.3",
+        "@tailwindcss/vite": "4.1.18",
+        "@vueuse/core": "14.2.1",
+        "@vueuse/nuxt": "14.2.1",
+        "better-sqlite3": "12.6.2",
+        "nuxt": "^4.1.3",
+        "tailwindcss": "4.1.18",
+        "vue": "3.5.28",
+        "vue-router": "5.0.2"
+    },
+    "devDependencies": {
+        "eslint": "10.0.0",
+        "prettier": "3.8.1",
+        "ts-node": "10.9.2",
+        "typescript": "5.9.3",
+        "vue-tsc": "3.2.4"
+    }
+}
