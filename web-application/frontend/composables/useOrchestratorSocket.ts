@@ -48,6 +48,8 @@ export function useOrchestratorSocket() {
     const lastAudioChunk = ref<{ agentId: string; chunk: string } | null>(null);
     const sessionEnded = ref(false);
     const sessionEndReason = ref<string>("");
+    const userTranscriptText = ref<string>("");
+    const agentErrorMessage = ref<string>("");
 
     // Parse incoming messages
     watch(data, (raw) => {
@@ -120,6 +122,14 @@ export function useOrchestratorSocket() {
                 sessionEndReason.value = msg.reason;
                 currentSessionId.value = null;
                 break;
+
+            case "user-transcript":
+                userTranscriptText.value = (msg as any).text || "";
+                break;
+
+            case "agent-error":
+                agentErrorMessage.value = (msg as any).message || "Unknown error";
+                break;
         }
     });
 
@@ -166,6 +176,10 @@ export function useOrchestratorSocket() {
 
         // Sources
         sourcesHistory,
+
+        // Conversation state
+        userTranscriptText,
+        agentErrorMessage,
 
         // Methods
         startSession,

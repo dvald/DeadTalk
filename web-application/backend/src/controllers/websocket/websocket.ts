@@ -8,6 +8,7 @@ import { AsyncQueue } from "@asanrom/async-tools";
 import { Monitor } from "../../monitor";
 import { RequestLogger } from "../../utils/request-log";
 import { WsOrchestratorService } from "../../services/ws-orchestrator-service";
+import { ConversationEngineService } from "../../services/conversation-engine-service";
 
 const WS_QUEUE_SIZE = 20;
 
@@ -116,8 +117,38 @@ export class WebsocketController {
                 break;
             case "stop-session":
                 if (this.sessionId) {
+                    ConversationEngineService.getInstance().endConversation(this.sessionId);
                     WsOrchestratorService.getInstance().emitSessionEnd(this.sessionId, "stopped");
                     this.sessionId = null;
+                }
+                break;
+            case "start-conversation":
+                {
+                    const personaId = msg.personaId || "";
+                    const sessionId = WsOrchestratorService.getInstance()
+                        .registerSession(this, "conversation", { personaId: personaId });
+                    this.sessionId = sessionId;
+                    this.send({ event: "session-started", sessionId: sessionId });
+                    // Start conversation asynchronously (don't block WebSocket message processing)
+                    ConversationEngineService.getInstance()
+                        .startConversation(sessionId, personaId)
+                        .catch((err) => {
+                            Monitor.exception(err, "WebSocket: startConversation failed");
+                        });
+                }
+                break;
+            case "audio-chunk":
+                if (this.sessionId && msg.chunk) {
+                    ConversationEngineService.getInstance().handleAudioChunk(this.sessionId, msg.chunk);
+                }
+                break;
+            case "speech-end":
+                if (this.sessionId) {
+                    ConversationEngineService.getInstance()
+                        .handleSpeechEnd(this.sessionId)
+                        .catch((err) => {
+                            Monitor.exception(err, "WebSocket: handleSpeechEnd failed");
+                        });
                 }
                 break;
             default:
@@ -131,7 +162,10 @@ export class WebsocketController {
         // Close
         this.closed = true;
 
-        // Cleanup orchestrator sessions
+        // Cleanup conversation engine and orchestrator sessions
+        if (this.sessionId) {
+            ConversationEngineService.getInstance().endConversation(this.sessionId);
+        }
         WsOrchestratorService.getInstance().removeSessionsByController(this);
         this.sessionId = null;
 

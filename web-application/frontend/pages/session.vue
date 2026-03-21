@@ -1,42 +1,52 @@
 <template>
   <div class="min-h-[100dvh] flex flex-col bg-background-surface">
-    <!-- TOP: Topic + Agents -->
-    <div class="p-4 flex-none">
-      <Heading
-        :title="topic"
-        :size="HeadingSize.XS"
-        :align="Align.CENTER"
-        class="line-clamp-2"
+    <!-- TOP: Persona info -->
+    <div class="p-4 flex-none flex items-center gap-3">
+      <div
+        class="w-12 h-12 rounded-full bg-background-neutral-subtle
+               flex items-center justify-center text-lg font-bold text-text-neutral-subtle shrink-0"
+      >
+        {{ personaInitial }}
+      </div>
+      <div class="min-w-0">
+        <Heading
+          :title="personaName"
+          :size="HeadingSize.XS"
+          class="line-clamp-1"
+        />
+        <p class="text-xs text-text-neutral-subtle">
+          {{ personaSubtitle }}
+        </p>
+      </div>
+    </div>
+
+    <!-- Audio wave player -->
+    <div v-if="agents.length > 0" class="px-4 pb-2 flex-none">
+      <AudioWavePlayer
+        :agentName="agents[0]?.name || ''"
+        :agentAvatar="agents[0]?.avatar || ''"
+        :isActive="currentSpeaker === agents[0]?.id"
+        :audioTag="wsAgentStates.get(agents[0]?.id)?.audioTag ?? ''"
       />
     </div>
 
-    <div v-if="agents.length > 0" class="px-4 pb-4 flex gap-4 flex-none">
-      <div
-        v-for="agent in agents"
-        :key="agent.id"
-        class="flex-1 min-w-0"
-      >
-        <AudioWavePlayer
-          :agentName="$t(agent.name)"
-          :agentAvatar="agent.avatar"
-          :isActive="currentSpeaker === agent.id"
-          :audioTag="wsAgentStates.get(agent.id)?.audioTag ?? ''"
-        />
-      </div>
-    </div>
-    <div v-else class="px-4 pb-4 flex-none flex items-center justify-center">
-      <p class="text-sm text-text-neutral-subtle animate-pulse">
-        {{ $t("Connecting...") }}
+    <!-- Transcripts -->
+    <div class="px-4 py-2 flex-none flex flex-col gap-1">
+      <p v-if="userTranscript" class="text-xs text-text-neutral-subtle italic">
+        {{ $t("You:") }} {{ userTranscript }}
+      </p>
+      <p v-if="agentTranscript" class="text-xs text-text-default">
+        {{ personaName }}: {{ agentTranscriptTruncated }}
       </p>
     </div>
 
     <!-- MIDDLE: Sources feed -->
     <div class="flex-1 overflow-y-auto px-4 py-2 flex flex-col gap-3">
       <p
-        v-if="sourcesReversed.length === 0"
+        v-if="sourcesReversed.length === 0 && status === 'active'"
         class="text-sm text-text-neutral-subtle text-center py-8"
       >
-        {{ $t("No sources yet") }}
+        {{ $t("Sources will appear here when the agent cites them...") }}
       </p>
       <SourceCardItem
         v-for="source in sourcesReversed"
@@ -47,41 +57,68 @@
 
     <!-- BOTTOM: Controls bar -->
     <div
-      class="flex-none border-t border-border-default px-4 py-3 flex items-center justify-between"
+      class="flex-none border-t border-border-default px-4 py-3 flex items-center justify-between gap-3"
     >
-      <Badge
-        v-if="status === 'connecting'"
-        :text="$t('Connecting...')"
-        :color="ColorAccent.NEUTRAL"
-      />
-      <Badge
-        v-else-if="status === 'active'"
-        :text="$t('Live')"
-        :color="ColorAccent.SUCCESS"
-      />
-      <Badge
-        v-else
-        :text="$t('Session ended')"
-        :color="ColorAccent.NEUTRAL"
-      />
+      <!-- Status -->
+      <div class="flex items-center gap-2 min-w-0">
+        <Badge
+          v-if="status === 'connecting'"
+          :text="$t('Connecting...')"
+          :color="ColorAccent.NEUTRAL"
+        />
+        <Badge
+          v-else-if="status === 'active' && isSpeaking"
+          :text="$t('Listening...')"
+          :color="ColorAccent.WARNING"
+        />
+        <Badge
+          v-else-if="status === 'active' && currentSpeaker"
+          :text="$t('Speaking...')"
+          :color="ColorAccent.SUCCESS"
+        />
+        <Badge
+          v-else-if="status === 'active'"
+          :text="$t('Ready')"
+          :color="ColorAccent.SUCCESS"
+        />
+        <Badge
+          v-else
+          :text="$t('Session ended')"
+          :color="ColorAccent.NEUTRAL"
+        />
+      </div>
 
-      <ActionButton
-        v-if="status !== 'ended'"
-        :text="$t('Stop debate')"
-        :styleType="ButtonStyleType.DELETE_FILLED"
-        :iconPosition="IconPosition.LEFT"
-        icon="mdi:stop"
-        :disabled="status === 'connecting'"
-        @click="onStop"
-      />
-      <ActionButton
-        v-else
-        :text="$t('Back to home')"
-        :styleType="ButtonStyleType.PRIMARY_BRAND_FILLED"
-        :iconPosition="IconPosition.LEFT"
-        icon="mdi:arrow-left"
-        @click="onBack"
-      />
+      <!-- Microphone + End button -->
+      <div class="flex items-center gap-2">
+        <!-- Mic indicator -->
+        <div
+          v-if="status === 'active' && isListening"
+          class="w-8 h-8 rounded-full flex items-center justify-center transition-colors duration-200"
+          :class="isSpeaking
+            ? 'bg-red-500 animate-pulse'
+            : 'bg-background-neutral-subtle'"
+        >
+          <Icon name="mdi:microphone" class="w-4 h-4" :class="isSpeaking ? 'text-white' : 'text-text-neutral-subtle'" />
+        </div>
+
+        <ActionButton
+          v-if="status !== 'ended'"
+          :text="$t('End')"
+          :styleType="ButtonStyleType.DELETE_FILLED"
+          :iconPosition="IconPosition.LEFT"
+          icon="mdi:stop"
+          :disabled="status === 'connecting'"
+          @click="onStop"
+        />
+        <ActionButton
+          v-else
+          :text="$t('Back')"
+          :styleType="ButtonStyleType.PRIMARY_BRAND_FILLED"
+          :iconPosition="IconPosition.LEFT"
+          icon="mdi:arrow-left"
+          @click="onBack"
+        />
+      </div>
     </div>
   </div>
 </template>
@@ -99,23 +136,35 @@ const localePath = useLocalePath();
 // Store
 const sessionStore = useSessionStore();
 const {
-  topic,
+  persona,
   agents,
   sources,
   status,
   currentSpeaker,
   sourcesReversed,
-  elapsedTime,
+  userTranscript,
+  agentTranscript,
 } = storeToRefs(sessionStore);
 
-// Topic from query string
-const topicFromUrl = computed(() => {
-  const raw = route.query.topic;
+// Persona from query string
+const personaIdFromUrl = computed(() => {
+  const raw = route.query.persona;
   return typeof raw === "string" ? decodeURIComponent(raw) : "";
 });
 
+const personaName = computed(() => persona.value?.name || personaIdFromUrl.value || "Unknown");
+const personaInitial = computed(() => personaName.value.charAt(0));
+const personaSubtitle = computed(() => {
+  if (persona.value) return persona.value.era + " · " + persona.value.profession;
+  return "";
+});
+const agentTranscriptTruncated = computed(() => {
+  const text = agentTranscript.value;
+  return text.length > 200 ? text.substring(text.length - 200) + "..." : text;
+});
+
 useHead(() => ({
-  title: topic.value || t("Live debate"),
+  title: personaName.value + " — DeadTalk",
 }));
 
 // WebSocket (transport layer)
@@ -124,48 +173,94 @@ const {
   sessionEnded,
   sessionEndReason,
   agentStates: wsAgentStates,
+  lastAudioChunk,
   sourcesHistory,
-  startSession: wsStartSession,
-  stopSession: wsStopSession,
+  userTranscriptText,
   open,
   close,
+  send: wsSend,
 } = useOrchestratorSocket();
 
-// Redirect if no topic, otherwise init
+// Audio playback
+const {
+  isPlaying: isAgentPlaying,
+  playChunk,
+  stopPlayback,
+} = useAudioPlayback();
+
+// Voice input (VAD)
+const {
+  isListening,
+  isSpeaking,
+  startListening,
+  stopListening,
+} = useVoiceInput((msg: any) => {
+  wsSend(msg);
+});
+
+// Redirect if no persona, otherwise init
 onMounted(() => {
-  if (!topicFromUrl.value) {
+  if (!personaIdFromUrl.value) {
     router.replace(localePath("/"));
     return;
   }
-  sessionStore.startSession(topicFromUrl.value);
+
+  // If store wasn't initialized from index.vue (e.g., direct URL access)
+  if (!persona.value || persona.value.id !== personaIdFromUrl.value) {
+    sessionStore.startConversation({
+      id: personaIdFromUrl.value,
+      name: personaIdFromUrl.value,
+      era: "",
+      nationality: "",
+      profession: "",
+      avatar: "",
+      firstMessage: "",
+    });
+  }
+
   open();
 });
 
 onBeforeUnmount(() => {
-  wsStopSession();
+  stopListening();
+  stopPlayback();
+  wsSend({ type: "stop-session" });
   close();
   sessionStore.resetSession();
 });
 
-// Bridge: WS connected → start debate + mark active
+// Bridge: WS connected → start conversation
 watch(isConnected, (connected) => {
   if (connected && status.value === "connecting") {
-    wsStartSession("debate", { topic: topicFromUrl.value });
+    wsSend({
+      type: "start-conversation",
+      personaId: personaIdFromUrl.value,
+    });
     sessionStore.setActive();
+
+    // Start listening for voice input
+    startListening();
   }
 });
 
 // Bridge: agent states → store
 watch(() => wsAgentStates.value, (states) => {
   for (const [id, state] of states) {
-    sessionStore.registerAgent(id);
     if (state.speaking) {
       sessionStore.setSpeaker(id);
+      sessionStore.setAgentTranscript(state.transcript);
     }
   }
   const anySpeaking = [...states.values()].some(s => s.speaking);
   if (!anySpeaking) sessionStore.setSpeaker(null);
 }, { deep: true });
+
+// Bridge: audio chunks → playback
+watch(lastAudioChunk, (chunk) => {
+  if (chunk && chunk.chunk) {
+    playChunk(chunk.chunk);
+  }
+});
 
 // Bridge: new sources → store
 watch(sourcesHistory, (history) => {
@@ -175,14 +270,24 @@ watch(sourcesHistory, (history) => {
   }
 });
 
+// Bridge: user transcript from backend
+watch(userTranscriptText, (text) => {
+  if (text) sessionStore.setUserTranscript(text);
+});
+
 // Bridge: session end → store
 watch(sessionEnded, (ended) => {
-  if (ended) sessionStore.endSession(sessionEndReason.value);
+  if (ended) {
+    stopListening();
+    sessionStore.endSession(sessionEndReason.value);
+  }
 });
 
 // Actions
 function onStop() {
-  wsStopSession();
+  stopListening();
+  stopPlayback();
+  wsSend({ type: "stop-session" });
 }
 
 function onBack() {

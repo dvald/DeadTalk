@@ -50,13 +50,25 @@ export interface SessionEndEvent {
     reason: "debate-end" | "conversation-end" | "stopped" | "error";
 }
 
+export interface UserTranscriptEvent {
+    event: "user-transcript";
+    text: string;
+}
+
+export interface AgentErrorEvent {
+    event: "agent-error";
+    message: string;
+}
+
 export type WsServerEvent =
     | HelloEvent
     | SessionStartedEvent
     | AgentSpeakingEvent
     | SourceCitedEvent
     | AgentFinishedEvent
-    | SessionEndEvent;
+    | SessionEndEvent
+    | UserTranscriptEvent
+    | AgentErrorEvent;
 
 /* Client → Server messages */
 
@@ -70,6 +82,20 @@ export interface StopSessionMessage {
     type: "stop-session";
 }
 
+export interface StartConversationMessage {
+    type: "start-conversation";
+    personaId: string;
+}
+
+export interface AudioChunkMessage {
+    type: "audio-chunk";
+    chunk: string;
+}
+
+export interface SpeechEndMessage {
+    type: "speech-end";
+}
+
 export interface KeepAliveMessage {
     type: "a";
 }
@@ -77,4 +103,7 @@ export interface KeepAliveMessage {
 export type WsClientMessage =
     | StartSessionMessage
     | StopSessionMessage
+    | StartConversationMessage
+    | AudioChunkMessage
+    | SpeechEndMessage
     | KeepAliveMessage;

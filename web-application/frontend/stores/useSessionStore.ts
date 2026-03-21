@@ -1,20 +1,25 @@
-import type { Agent, SessionStatus } from "~/models/session";
+import type { Agent, PersonaSummary, SessionStatus, SessionMode } from "~/models/session";
 import type { SourceCard } from "~/models/source-card";
 
 export const useSessionStore = defineStore("session", () => {
   // ── State ──────────────────────────────────────────────
   const topic = ref<string>("");
+  const mode = ref<SessionMode>("conversation");
+  const persona = ref<PersonaSummary | null>(null);
   const agents = ref<Agent[]>([]);
   const sources = ref<SourceCard[]>([]);
   const status = ref<SessionStatus>("idle");
   const currentSpeaker = ref<string | null>(null);
   const elapsedTime = ref<number>(0);
   const endReason = ref<string>("");
+  const userTranscript = ref<string>("");
+  const agentTranscript = ref<string>("");
 
   // ── Computed ───────────────────────────────────────────
   const sourcesReversed = computed(() => [...sources.value].reverse());
   const isActive = computed(() => status.value === "active");
   const agentById = computed(() => new Map(agents.value.map(a => [a.id, a])));
+  const isConversation = computed(() => mode.value === "conversation");
 
   // ── Timer (private) ───────────────────────────────────
   let timerInterval: ReturnType<typeof setInterval> | null = null;
@@ -34,14 +39,48 @@ export const useSessionStore = defineStore("session", () => {
   }
 
   // ── Actions ────────────────────────────────────────────
+
+  /**
+   * Starts a debate session (legacy mode).
+   */
   function startSession(newTopic: string) {
+    mode.value = "debate";
     topic.value = newTopic;
+    persona.value = null;
     agents.value = [];
     sources.value = [];
     status.value = "connecting";
     currentSpeaker.value = null;
     elapsedTime.value = 0;
     endReason.value = "";
+    userTranscript.value = "";
+    agentTranscript.value = "";
+    startTimer();
+  }
+
+  /**
+   * Starts a conversation session with a historical persona.
+   */
+  function startConversation(selectedPersona: PersonaSummary) {
+    mode.value = "conversation";
+    topic.value = selectedPersona.name;
+    persona.value = selectedPersona;
+    agents.value = [{
+      id: selectedPersona.id,
+      name: selectedPersona.name,
+      voiceId: "",
+      avatar: selectedPersona.avatar,
+      stance: "",
+      era: selectedPersona.era,
+      profession: selectedPersona.profession,
+    }];
+    sources.value = [];
+    status.value = "connecting";
+    currentSpeaker.value = null;
+    elapsedTime.value = 0;
+    endReason.value = "";
+    userTranscript.value = "";
+    agentTranscript.value = "";
     startTimer();
   }
 
@@ -70,6 +109,14 @@ export const useSessionStore = defineStore("session", () => {
     sources.value = [...sources.value, card];
   }
 
+  function setUserTranscript(text: string) {
+    userTranscript.value = text;
+  }
+
+  function setAgentTranscript(text: string) {
+    agentTranscript.value = text;
+  }
+
   function endSession(reason: string) {
     status.value = "ended";
     currentSpeaker.value = null;
@@ -79,36 +126,48 @@ export const useSessionStore = defineStore("session", () => {
 
   function resetSession() {
     topic.value = "";
+    mode.value = "conversation";
+    persona.value = null;
     agents.value = [];
     sources.value = [];
     status.value = "idle";
     currentSpeaker.value = null;
     elapsedTime.value = 0;
     endReason.value = "";
+    userTranscript.value = "";
+    agentTranscript.value = "";
     stopTimer();
   }
 
   return {
     // State
     topic,
+    mode,
+    persona,
     agents,
     sources,
     status,
     currentSpeaker,
     elapsedTime,
     endReason,
+    userTranscript,
+    agentTranscript,
 
     // Computed
     sourcesReversed,
     isActive,
     agentById,
+    isConversation,
 
     // Actions
     startSession,
+    startConversation,
     setActive,
     registerAgent,
     setSpeaker,
     addSource,
+    setUserTranscript,
+    setAgentTranscript,
     endSession,
     resetSession,
   };

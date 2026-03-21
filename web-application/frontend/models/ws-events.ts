@@ -46,13 +46,25 @@ export interface WsSessionEndEvent {
   reason: "debate-end" | "conversation-end" | "stopped" | "error";
 }
 
+export interface WsUserTranscriptEvent {
+  event: "user-transcript";
+  text: string;
+}
+
+export interface WsAgentErrorEvent {
+  event: "agent-error";
+  message: string;
+}
+
 export type WsServerEvent =
   | WsHelloEvent
   | WsSessionStartedEvent
   | WsAgentSpeakingEvent
   | WsSourceCitedEvent
   | WsAgentFinishedEvent
-  | WsSessionEndEvent;
+  | WsSessionEndEvent
+  | WsUserTranscriptEvent
+  | WsAgentErrorEvent;
 
 /* Client → Server messages */
 
@@ -66,9 +78,26 @@ export interface WsStopSessionMessage {
   type: "stop-session";
 }
 
+export interface WsStartConversationMessage {
+  type: "start-conversation";
+  personaId: string;
+}
+
+export interface WsAudioChunkMessage {
+  type: "audio-chunk";
+  chunk: string;
+}
+
+export interface WsSpeechEndMessage {
+  type: "speech-end";
+}
+
 export type WsClientMessage =
   | WsStartSessionMessage
-  | WsStopSessionMessage;
+  | WsStopSessionMessage
+  | WsStartConversationMessage
+  | WsAudioChunkMessage
+  | WsSpeechEndMessage;
 
 /* Agent state tracked by the composable */
 
