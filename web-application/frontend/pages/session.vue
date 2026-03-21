@@ -199,6 +199,22 @@
                         class="w-5 h-5 text-[#d4a853]"
                     />
                 </button>
+
+                <button
+                    v-if="status !== 'ended'"
+                    class="h-10 px-3 rounded-md border border-red-500/40 bg-red-500/15 text-red-200 text-sm font-medium transition-colors duration-150 hover:bg-red-500/25 disabled:opacity-50"
+                    :disabled="status === 'connecting'"
+                    @click="onStop"
+                >
+                    {{ $t("End") }}
+                </button>
+                <button
+                    v-else
+                    class="h-10 px-3 rounded-md border border-border-default bg-background-neutral-subtle text-text-default text-sm font-medium transition-colors duration-150 hover:bg-background-neutral-hover"
+                    @click="onBack"
+                >
+                    {{ $t("Back") }}
+                </button>
             </div>
         </div>
 
@@ -492,9 +508,13 @@ watch(isAgentPlaying, (playing) => {
 
 // Bridge: new sources → store
 watch(sourcesHistory, (history) => {
-    if (history.length > sources.value.length) {
-        const newSources = history.slice(sources.value.length);
-        newSources.forEach((s) => sessionStore.addSource(s));
+    if (!history || history.length === 0) return;
+    const existingIds = new Set(sources.value.map((s) => s.id));
+    for (const source of history) {
+        if (!existingIds.has(source.id)) {
+            sessionStore.addSource(source);
+            existingIds.add(source.id);
+        }
     }
 });
 
@@ -523,6 +543,16 @@ function onInterrupt() {
     stopPlayback();
     wsSend({ type: "interrupt-agent" });
     sessionStore.setSpeaker(null);
+}
+
+function onStop() {
+    stopListening();
+    stopPlayback();
+    wsSend({ type: "stop-session" });
+}
+
+function onBack() {
+    router.push(localePath("/"));
 }
 
 // Push-to-talk handlers
