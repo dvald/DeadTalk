@@ -19,7 +19,7 @@ export class OpenAIConfig {
 
         config.apiKey = process.env.OPENAI_API_KEY || "";
         config.model = process.env.OPENAI_MODEL || "gpt-4o";
-        config.maxTokens = parseInt(process.env.OPENAI_MAX_TOKENS || "1024", 10);
+        config.maxTokens = parseInt(process.env.OPENAI_MAX_TOKENS || "350", 10);
 
         if (!config.apiKey) {
             throw new Error("Missing required environment variable: OPENAI_API_KEY");

@@ -1,11 +1,12 @@
 <template>
-    <Section class="min-h-[100dvh] flex flex-col px-4 py-8">
+    <Section class="seance-bg seance-particles min-h-[100dvh] flex flex-col px-4 py-8">
         <!-- Hero -->
         <div class="flex flex-col gap-2 items-center text-center pt-8 pb-6">
             <Heading
                 :title="$t('DeadTalk')"
                 :size="HeadingSize.MD"
                 :align="Align.CENTER"
+                class="heading-font seance-text-glow"
             />
             <p class="text-sm text-text-neutral-subtle max-w-sm">
                 {{ $t("Have real voice conversations with historical figures, powered by real web sources.") }}
@@ -18,12 +19,12 @@
                 <button
                     v-for="p in personas"
                     :key="p.id"
-                    class="group flex flex-col items-center gap-2 rounded-xl border border-border-default p-4 transition-all duration-200 hover:border-border-brand hover:bg-background-neutral-subtle active:scale-95 cursor-pointer"
+                    class="group flex flex-col items-center gap-2 rounded-xl border border-[rgba(212,168,83,0.15)] p-4 transition-all duration-300 hover:border-[rgba(212,168,83,0.5)] hover:shadow-[0_0_20px_rgba(212,168,83,0.1)] hover:bg-background-neutral-subtle active:scale-95 cursor-pointer"
                     @click="selectPersona(p)"
                 >
                     <!-- Avatar placeholder -->
                     <div
-                        class="w-16 h-16 rounded-full bg-background-neutral-subtle flex items-center justify-center text-2xl font-bold text-text-neutral-subtle group-hover:bg-background-primary-brand-default group-hover:text-text-inverse transition-colors duration-200"
+                        class="w-16 h-16 rounded-full bg-background-neutral-subtle flex items-center justify-center text-2xl font-bold text-text-neutral-subtle group-hover:bg-[#d4a853] group-hover:text-[#0a0a0f] transition-colors duration-300 heading-font"
                     >
                         {{ p.name.charAt(0) }}
                     </div>
@@ -96,6 +97,7 @@ onMounted(async () => {
                         profession: p.profession || "",
                         avatar: p.avatar || "",
                         firstMessage: p.firstMessage || "",
+                        firstMessageEs: p.firstMessageEs || "",
                     }));
                     personas.value = normalized;
                     resolve();
@@ -121,6 +123,7 @@ onMounted(async () => {
                 profession: "Inventor & Engineer",
                 avatar: "",
                 firstMessage: "",
+                firstMessageEs: "",
             },
             {
                 id: "einstein",
@@ -130,6 +133,7 @@ onMounted(async () => {
                 profession: "Theoretical Physicist",
                 avatar: "",
                 firstMessage: "",
+                firstMessageEs: "",
             },
             {
                 id: "curie",
@@ -139,6 +143,7 @@ onMounted(async () => {
                 profession: "Physicist & Chemist",
                 avatar: "",
                 firstMessage: "",
+                firstMessageEs: "",
             },
             {
                 id: "cleopatra",
@@ -148,6 +153,7 @@ onMounted(async () => {
                 profession: "Pharaoh & Ruler",
                 avatar: "",
                 firstMessage: "",
+                firstMessageEs: "",
             },
             {
                 id: "jobs",
@@ -157,6 +163,7 @@ onMounted(async () => {
                 profession: "Entrepreneur & Visionary",
                 avatar: "",
                 firstMessage: "",
+                firstMessageEs: "",
             },
         ];
     } finally {

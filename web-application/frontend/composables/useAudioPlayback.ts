@@ -1,11 +1,13 @@
 /**
  * Composable for playing base64-encoded audio chunks received via WebSocket.
  * Decodes base64 → ArrayBuffer → AudioBuffer and plays through Web Audio API.
+ * Exposes an AnalyserNode for real-time waveform visualization.
  */
 
 export function useAudioPlayback() {
     const isPlaying = ref(false);
     let audioContext: AudioContext | null = null;
+    let analyserNode: AnalyserNode | null = null;
     let currentSource: AudioBufferSourceNode | null = null;
     let playbackGeneration = 0;
     let processingQueue = false;
@@ -14,12 +16,28 @@ export function useAudioPlayback() {
     function getAudioContext(): AudioContext {
         if (!audioContext || audioContext.state === "closed") {
             audioContext = new AudioContext();
+            // Create analyser node once per context
+            analyserNode = audioContext.createAnalyser();
+            analyserNode.fftSize = 64; // 32 frequency bins — maps well to 24 bars
+            analyserNode.smoothingTimeConstant = 0.6;
+            analyserNode.connect(audioContext.destination);
         }
         // Resume if suspended (browser autoplay policy)
         if (audioContext.state === "suspended") {
             audioContext.resume();
         }
         return audioContext;
+    }
+
+    /**
+     * Returns frequency data (0-255) from the current audio playback.
+     * Returns null if no analyser is available.
+     */
+    function getFrequencyData(): Uint8Array | null {
+        if (!analyserNode) return null;
+        const data = new Uint8Array(analyserNode.frequencyBinCount);
+        analyserNode.getByteFrequencyData(data);
+        return data;
     }
 
     /**
@@ -73,7 +91,8 @@ export function useAudioPlayback() {
                     await new Promise<void>((resolve) => {
                         const source = ctx.createBufferSource();
                         source.buffer = audioBuffer;
-                        source.connect(ctx.destination);
+                        // Route through analyser for visualization
+                        source.connect(analyserNode!);
 
                         source.onended = () => {
                             if (currentSource === source) {
@@ -130,6 +149,7 @@ export function useAudioPlayback() {
         if (audioContext && audioContext.state !== "closed") {
             audioContext.close();
             audioContext = null;
+            analyserNode = null;
         }
     });
 
@@ -137,5 +157,6 @@ export function useAudioPlayback() {
         isPlaying,
         playChunk,
         stopPlayback,
+        getFrequencyData,
     };
 }

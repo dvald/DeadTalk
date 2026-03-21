@@ -354,5 +354,19 @@
     "result": "resultado",
     "results": "resultados",
     "to": "a",
-    "up to": "hasta"
+    "up to": "hasta",
+    "You:": "Tú:",
+    "Sources will appear here when the agent cites them...": "Las fuentes aparecerán aquí cuando el agente las cite...",
+    "Listening...": "Escuchando...",
+    "Speaking...": "Hablando...",
+    "Ready": "Listo",
+    "Auto": "Auto",
+    "Push": "Pulsar",
+    "End": "Fin",
+    "Back": "Volver",
+    "DeadTalk": "DeadTalk",
+    "DeadTalk - Talk to History": "DeadTalk - Habla con la Historia",
+    "Have real voice conversations with historical figures, powered by real web sources.": "Conversa con figuras históricas mediante voz real, con fuentes web verificadas.",
+    "Loading personas...": "Cargando personajes...",
+    "Built with ElevenLabs + Firecrawl for #ElevenHacks": "Hecho con ElevenLabs + Firecrawl para #ElevenHacks"
 }

@@ -86,7 +86,7 @@ export class OpenAIService {
      * @param tools Optional tool definitions for function calling
      * @returns The LLM's response text and/or tool calls
      */
-    public async chat(messages: ChatMessage[], tools?: ToolDefinition[]): Promise<ChatResult> {
+    public async chat(messages: ChatMessage[], tools?: ToolDefinition[], toolChoice?: string): Promise<ChatResult> {
         Monitor.debug("OpenAIService.chat", { messageCount: messages.length, hasTools: !!tools });
 
         try {
@@ -110,7 +110,7 @@ export class OpenAIService {
 
             if (tools && tools.length > 0) {
                 params.tools = tools;
-                params.tool_choice = "auto";
+                params.tool_choice = toolChoice || "auto";
             }
 
             const completion = await this.client.chat.completions.create(params);
@@ -178,13 +178,16 @@ export class OpenAIService {
         tools: ToolDefinition[],
         toolResolver: (toolCall: ToolCall) => Promise<string>,
         maxRounds?: number,
+        toolChoice?: string,
     ): Promise<{ response: string; resolvedToolCalls: ToolCall[] }> {
         const rounds = maxRounds || 3;
         const allMessages = [...messages];
         const resolvedToolCalls: ToolCall[] = [];
 
         for (let round = 0; round < rounds; round++) {
-            const result = await this.chat(allMessages, tools);
+            // Only force tool_choice on the first round; subsequent rounds use "auto"
+            const choice = round === 0 ? toolChoice : undefined;
+            const result = await this.chat(allMessages, tools, choice);
 
             // If no tool calls, return the response
             if (result.toolCalls.length === 0) {

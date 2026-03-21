@@ -15,7 +15,8 @@ import { PersonasConfig } from "../../config/personas";
  * @property {string} nationality - Nationality
  * @property {string} profession - Profession / title
  * @property {string} avatar - Avatar image path
- * @property {string} firstMessage - Greeting message
+ * @property {string} firstMessage - Greeting message (English)
+ * @property {string} firstMessageEs - Greeting message (Spanish)
  */
 
 /**
@@ -32,7 +33,8 @@ import { PersonasConfig } from "../../config/personas";
  * @property {string} nationality - Nationality
  * @property {string} profession - Profession / title
  * @property {string} avatar - Avatar image path
- * @property {string} firstMessage - Greeting message
+ * @property {string} firstMessage - Greeting message (English)
+ * @property {string} firstMessageEs - Greeting message (Spanish)
  * @property {Array.<PersonaEmotionalTrigger>} emotionalProfile - Emotional triggers
  * @property {Array.<string>} searchKeywords - Search context keywords
  */
@@ -92,6 +94,7 @@ export class PersonasController extends Controller {
             profession: persona.profession,
             avatar: persona.avatar,
             firstMessage: persona.firstMessage,
+            firstMessageEs: persona.firstMessageEs,
             emotionalProfile: persona.emotionalProfile,
             searchKeywords: persona.searchKeywords,
         });

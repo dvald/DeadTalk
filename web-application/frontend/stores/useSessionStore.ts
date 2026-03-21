@@ -1,4 +1,4 @@
-import type { Agent, SessionStatus, SessionMode } from "~/models/session";
+import type { Agent, SessionStatus, SessionMode, MicMode, ConversationEntry } from "~/models/session";
 import type { PersonaSummary } from "~/api/definitions";
 import type { SourceCard } from "~/models/source-card";
 
@@ -15,6 +15,8 @@ export const useSessionStore = defineStore("session", () => {
     const endReason = ref<string>("");
     const userTranscript = ref<string>("");
     const agentTranscript = ref<string>("");
+    const micMode = ref<MicMode>("auto");
+    const conversationHistory = ref<ConversationEntry[]>([]);
 
     // ── Computed ───────────────────────────────────────────
     const sourcesReversed = computed(() => [...sources.value].reverse());
@@ -56,6 +58,7 @@ export const useSessionStore = defineStore("session", () => {
         endReason.value = "";
         userTranscript.value = "";
         agentTranscript.value = "";
+        conversationHistory.value = [];
         startTimer();
     }
 
@@ -84,6 +87,7 @@ export const useSessionStore = defineStore("session", () => {
         endReason.value = "";
         userTranscript.value = "";
         agentTranscript.value = "";
+        conversationHistory.value = [];
         startTimer();
     }
 
@@ -120,6 +124,18 @@ export const useSessionStore = defineStore("session", () => {
         agentTranscript.value = text;
     }
 
+    function addConversationEntry(entry: ConversationEntry) {
+        conversationHistory.value = [...conversationHistory.value, entry];
+    }
+
+    function toggleMicMode() {
+        micMode.value = micMode.value === "auto" ? "manual" : "auto";
+    }
+
+    function setMicMode(newMode: MicMode) {
+        micMode.value = newMode;
+    }
+
     function endSession(reason: string) {
         status.value = "ended";
         currentSpeaker.value = null;
@@ -139,6 +155,8 @@ export const useSessionStore = defineStore("session", () => {
         endReason.value = "";
         userTranscript.value = "";
         agentTranscript.value = "";
+        micMode.value = "auto";
+        conversationHistory.value = [];
         stopTimer();
     }
 
@@ -155,6 +173,8 @@ export const useSessionStore = defineStore("session", () => {
         endReason,
         userTranscript,
         agentTranscript,
+        micMode,
+        conversationHistory,
 
         // Computed
         sourcesReversed,
@@ -173,5 +193,8 @@ export const useSessionStore = defineStore("session", () => {
         setAgentTranscript,
         endSession,
         resetSession,
+        addConversationEntry,
+        toggleMicMode,
+        setMicMode,
     };
 });

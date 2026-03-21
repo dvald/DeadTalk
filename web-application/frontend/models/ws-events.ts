@@ -81,6 +81,8 @@ export interface WsStopSessionMessage {
 export interface WsStartConversationMessage {
     type: "start-conversation";
     personaId: string;
+    language?: string;
+    history?: Array<{ role: "user" | "agent"; text: string }>;
 }
 
 export interface WsAudioChunkMessage {

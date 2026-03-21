@@ -2,7 +2,7 @@
     <Card
         :hasShadow="false"
         hasBorder
-        class="w-full"
+        class="w-full seance-card-border transition-all duration-200"
     >
         <CardBody class="!p-3 flex flex-col gap-2">
             <!-- Header: favicon + domain + time -->
