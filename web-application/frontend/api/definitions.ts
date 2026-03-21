@@ -313,6 +313,104 @@ export interface UploadProfileImageResponse {
     url?: string;
 }
 
+export interface PersonaSummary {
+    /**
+     * Persona slug identifier
+     */
+    id?: string;
+
+    /**
+     * Display name
+     */
+    name?: string;
+
+    /**
+     * Birth-death years
+     */
+    era?: string;
+
+    /**
+     * Nationality
+     */
+    nationality?: string;
+
+    /**
+     * Profession / title
+     */
+    profession?: string;
+
+    /**
+     * Avatar image path
+     */
+    avatar?: string;
+
+    /**
+     * Greeting message
+     */
+    firstMessage?: string;
+}
+
+export interface PersonaEmotionalTrigger {
+    /**
+     * Emotional mode (e.g. "angry")
+     */
+    emotion?: string;
+
+    /**
+     * Trigger context for that emotion
+     */
+    trigger?: string;
+}
+
+export interface PersonaDetail {
+    /**
+     * Persona slug identifier
+     */
+    id?: string;
+
+    /**
+     * Display name
+     */
+    name?: string;
+
+    /**
+     * Birth-death years
+     */
+    era?: string;
+
+    /**
+     * Nationality
+     */
+    nationality?: string;
+
+    /**
+     * Profession / title
+     */
+    profession?: string;
+
+    /**
+     * Avatar image path
+     */
+    avatar?: string;
+
+    /**
+     * Greeting message
+     */
+    firstMessage?: string;
+
+    emotionalProfile?: PersonaEmotionalTrigger[];
+
+    searchKeywords?: string[];
+}
+
+export interface PersonaNotFoundError {
+    /**
+     * Error code:
+     *  - PERSONA_NOT_FOUND: Persona was not found
+     */
+    code: string;
+}
+
 export interface ErrorResponse {
     /**
      * Error code 

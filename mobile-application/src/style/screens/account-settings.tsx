@@ -99,22 +99,22 @@ const AccountSettingsScreensStyles = (theme: ColorTheme) => {
             flexDirection: "row",
         },
 
-        walletContainer: {
+        profileCardContainer: {
             paddingBottom: 12,
         },
 
-        walletContainerInner: {
+        profileCardContainerInner: {
             borderRadius: 16,
             backgroundColor: theme.areaBackground,
             padding: 16,
         },
 
-        walletHeader: {
+        profileCardHeader: {
             flexDirection: "row",
             alignItems: "center",
         },
 
-        walletIconContainer: {
+        profileIconContainer: {
             width: 48,
             height: 48,
             borderRadius: 24,
@@ -124,7 +124,7 @@ const AccountSettingsScreensStyles = (theme: ColorTheme) => {
             alignItems: "center",
         },
 
-        walletName: {
+        profileName: {
             fontFamily: ThemeConstants.fonts.main,
             color: theme.text,
             fontSize: 18,
@@ -134,14 +134,14 @@ const AccountSettingsScreensStyles = (theme: ColorTheme) => {
             marginLeft: 8,
         },
 
-        walletAddress: {
+        profileSecondaryText: {
             paddingVertical: 8,
             opacity: 0.8,
             fontFamily: ThemeConstants.fonts.main,
             color: theme.text,
         },
 
-        walletOptionsRow: {
+        profileOptionsRow: {
             paddingBottom: 10,
             flexDirection: "row",
             justifyContent: "space-between",

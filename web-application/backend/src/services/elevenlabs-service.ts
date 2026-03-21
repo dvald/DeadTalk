@@ -222,6 +222,105 @@ export class ElevenLabsService {
     }
 
     /**
+     * Transcribes audio to text using ElevenLabs Speech-to-Text API.
+     * Sends audio as multipart form-data to POST /v1/speech-to-text.
+     * @param audioBuffer Buffer containing the audio data (PCM, WAV, MP3, etc.)
+     * @param language Optional language code (e.g., "en"). Auto-detected if omitted.
+     * @returns The transcription text
+     */
+    public async speechToText(audioBuffer: Buffer, language?: string): Promise<string> {
+        const url = this.baseUrl + "/speech-to-text";
+
+        Monitor.debug("ElevenLabsService.speechToText", { audioBytes: audioBuffer.length, language: language || "auto" });
+
+        return new Promise<string>((resolve, reject) => {
+            // Build multipart form-data manually (no extra dependency)
+            const boundary = "----ElevenLabsSTT" + Date.now();
+            const parts: Buffer[] = [];
+
+            // Audio file part
+            parts.push(Buffer.from(
+                "--" + boundary + "\r\n" +
+                "Content-Disposition: form-data; name=\"file\"; filename=\"audio.wav\"\r\n" +
+                "Content-Type: audio/wav\r\n\r\n"
+            ));
+            parts.push(audioBuffer);
+            parts.push(Buffer.from("\r\n"));
+
+            // Model part
+            parts.push(Buffer.from(
+                "--" + boundary + "\r\n" +
+                "Content-Disposition: form-data; name=\"model_id\"\r\n\r\n" +
+                "scribe_v1\r\n"
+            ));
+
+            // Language part (optional)
+            if (language) {
+                parts.push(Buffer.from(
+                    "--" + boundary + "\r\n" +
+                    "Content-Disposition: form-data; name=\"language_code\"\r\n\r\n" +
+                    language + "\r\n"
+                ));
+            }
+
+            // Closing boundary
+            parts.push(Buffer.from("--" + boundary + "--\r\n"));
+
+            const body = Buffer.concat(parts);
+
+            const parsedUrl = new URL(url);
+
+            const req = HTTPS.request({
+                hostname: parsedUrl.hostname,
+                port: parsedUrl.port || 443,
+                path: parsedUrl.pathname + parsedUrl.search,
+                method: "POST",
+                headers: {
+                    "xi-api-key": this.apiKey,
+                    "Content-Type": "multipart/form-data; boundary=" + boundary,
+                    "Content-Length": body.length,
+                },
+            }, (response) => {
+                let responseData = "";
+                response.on("data", (chunk) => { responseData += chunk; });
+                response.on("end", () => {
+                    if (response.statusCode !== 200) {
+                        let errorMsg = "ElevenLabs STT error (status " + response.statusCode + ")";
+                        try {
+                            const parsed = JSON.parse(responseData);
+                            if (parsed.detail && parsed.detail.message) {
+                                errorMsg = parsed.detail.message;
+                            }
+                        } catch (_e) {
+                            // Use default error message
+                        }
+                        Monitor.warning("ElevenLabsService.speechToText API error", { statusCode: response.statusCode, error: errorMsg });
+                        return reject(Object.assign(new Error(errorMsg), { code: "ELEVENLABS_ERROR" }));
+                    }
+
+                    try {
+                        const parsed = JSON.parse(responseData);
+                        const text = parsed.text || "";
+                        Monitor.debug("ElevenLabsService.speechToText completed", { textLength: text.length });
+                        resolve(text);
+                    } catch (ex) {
+                        Monitor.exception(ex, "ElevenLabsService.speechToText failed to parse response");
+                        reject(Object.assign(new Error("Failed to parse STT response"), { code: "ELEVENLABS_ERROR" }));
+                    }
+                });
+            });
+
+            req.on("error", (err) => {
+                Monitor.exception(err, "ElevenLabsService.speechToText request failed");
+                reject(Object.assign(new Error("ElevenLabs STT request failed: " + err.message), { code: "ELEVENLABS_ERROR" }));
+            });
+
+            req.write(body);
+            req.end();
+        });
+    }
+
+    /**
      * Generates a configuration object for an ElevenAgent (Conversational AI).
      * This is a pure local method — no API call.
      * @param persona The system prompt / persona description for the agent

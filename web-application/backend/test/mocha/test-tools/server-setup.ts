@@ -1,5 +1,5 @@
 // Server setup
-// Setups config, smart contracts and a test server
+// Setups config and a test server
 
 "use strict";
 
@@ -9,12 +9,10 @@ import { AsyncSemaphore } from "@asanrom/async-tools";
 import { TestLog } from "./log";
 import { setupMongoDatabaseIndexes } from "../../../src/utils/mongo-db-indexes";
 import { MainWebApplication } from "../../../src/app";
-import { BlockchainEventsScanner } from "../../../src/services/blockchain-events-scan";
 import { Config } from "../../../src/config/config";
 import { FileStorageConfig } from "../../../src/config/config-file-storage";
 import { DatabaseConfig } from "../../../src/config/config-database";
 import { TaskService } from "../../../src/services/task-service";
-import { Web3RPCClient } from "@asanrom/smart-contract-wrapper";
 
 export interface TestServerState {
     port: number;
@@ -64,12 +62,6 @@ export async function setupTestServer(): Promise<TestServerState> {
     return SETUP_STATE.state;
 }
 
-const TEST_BESU_NODE_RPC = "http://localhost:8545"
-const TEST_PRIVATE_KEY = "3de106f01f3fa595f215f50a0daf2ddd1bd061663b69396783a70dcee9f1f755";
-const TEST_PRIVATE_KEY_BUFFER = Buffer.from(TEST_PRIVATE_KEY, "hex");
-
-export const TEST_BINANCE_KEY = "jzfohdbb0tte42sgfzj9fkmpb5hmsswwnxbjy8waohjpytndpwck8lgpg5xxxitb";
-
 async function setupAll() {
     // Initial config
 
@@ -101,21 +93,6 @@ async function setupAll() {
     process.env.LOG_ELASTIC_SEARCH_ENABLED = "NO";
     process.env.FILE_STORAGE_PRIVATE_SECRET = "secret";
 
-    // Set blockchain synced block to the current block
-
-    const lastBlock = await Web3RPCClient.getInstance().getBlockByNumber("latest", { rpcURL: TEST_BESU_NODE_RPC });
-
-    if (lastBlock) {
-        process.env.BLOCKCHAIN_SYNC_FIRST_BLOCK = lastBlock.number + "";
-        TestLog.info(`Set BLOCKCHAIN_SYNC_FIRST_BLOCK to ${lastBlock.number + ""}`);
-    }
-
-    // Deploy smart contracts
-
-    TestLog.info("Deploying test smart contracts...");
-
-    await deploySmartContracts();
-
     // Load config
     Config.getInstance();
 
@@ -139,19 +116,6 @@ async function setupAll() {
     // Start services
     TestLog.info("Starting rest of services...");
 
-    // Run blockchain sync
-    await BlockchainEventsScanner.getInstance().start();
-
     // Start task service
     TaskService.getInstance().start();
-}
-
-
-async function deploySmartContracts() {
-    // Deploy smart contracts
-    // We assume they are already compiled
-
-
-
-    // Change configuration (env)
 }

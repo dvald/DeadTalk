@@ -8,7 +8,7 @@
                 :validator="validateField"
                 :label="$t('Name')"
                 :placeholder="$t('Ex.: John Steward')"
-                :maxLength="FieldMaxLength.WALLET_NAME"
+                :maxLength="FieldMaxLength.PROFILE_NAME"
                 required
             />
         </FormRow>

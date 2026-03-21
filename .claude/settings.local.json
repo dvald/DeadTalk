@@ -5,11 +5,9 @@
       "Bash(npm install:*)",
       "Bash(npm audit:*)",
       "Bash(npm view:*)",
-      "Bash(find C:UsersUsuario__CoworkElevenlabsdlt-project-template -name .env* -type f)",
-      "Bash(grep -r @asanrom/smart-contract-wrapper C:UsersUsuario__CoworkElevenlabsdlt-project-template --include=*.json --include=*.ts)",
-      "Bash(find C:UsersUsuario__CoworkElevenlabsdlt-project-template -name build* -type f)",
-      "Bash(grep -r \"BLOCKCHAIN\\\\|WALLET\\\\|ETHEREUM\\\\|RPC_URL\\\\|PRIVATE_KEY\" C:UsersUsuario__CoworkElevenlabsdlt-project-template --include=*.md --include=*.example)",
-      "Bash(find /c/Users/Usuario/__Cowork/Elevenlabs/dlt-project-template/web-application/backend/src -type f -name *.ts)",
+      "Bash(find C:UsersUsuario__CoworkElevenlabs01-firecrawlDeadTalk -name .env* -type f)",
+      "Bash(find C:UsersUsuario__CoworkElevenlabs01-firecrawlDeadTalk -name build* -type f)",
+      "Bash(find /c/Users/Usuario/__Cowork/Elevenlabs/01-firecrawl/DeadTalk/web-application/backend/src -type f -name *.ts)",
       "Bash(xargs grep:*)"
     ]
   }
