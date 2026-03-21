@@ -7,6 +7,9 @@ export function useAudioPlayback() {
   const isPlaying = ref(false);
   let audioContext: AudioContext | null = null;
   let currentSource: AudioBufferSourceNode | null = null;
+  let playbackGeneration = 0;
+  let processingQueue = false;
+  const playbackQueue: Array<{ chunk: string; onEnded?: () => void }> = [];
 
   function getAudioContext(): AudioContext {
     if (!audioContext || audioContext.state === "closed") {
@@ -21,46 +24,86 @@ export function useAudioPlayback() {
 
   /**
    * Plays a base64-encoded audio chunk (MP3/WAV).
-   * Stops any currently playing audio first.
+   * Chunks are queued and played sequentially.
    * @param base64Chunk Base64-encoded audio data
    * @param onEnded Optional callback when playback finishes
    */
   async function playChunk(base64Chunk: string, onEnded?: () => void) {
     if (!base64Chunk) return;
 
+    playbackQueue.push({ chunk: base64Chunk, onEnded });
+    if (processingQueue) {
+      return;
+    }
+    await processQueue();
+  }
+
+  async function processQueue() {
+    if (processingQueue) {
+      return;
+    }
+    processingQueue = true;
+
     try {
-      const ctx = getAudioContext();
+      while (playbackQueue.length > 0) {
+        const item = playbackQueue.shift();
+        if (!item || !item.chunk) {
+          continue;
+        }
 
-      // Decode base64 to ArrayBuffer
-      const binaryStr = atob(base64Chunk);
-      const bytes = new Uint8Array(binaryStr.length);
-      for (let i = 0; i < binaryStr.length; i++) {
-        bytes[i] = binaryStr.charCodeAt(i);
+        try {
+          const generationAtStart = playbackGeneration;
+          const ctx = getAudioContext();
+
+          // Decode base64 to ArrayBuffer
+          const binaryStr = atob(item.chunk);
+          const bytes = new Uint8Array(binaryStr.length);
+          for (let i = 0; i < binaryStr.length; i++) {
+            bytes[i] = binaryStr.charCodeAt(i);
+          }
+
+          // Decode audio data
+          const audioBuffer = await ctx.decodeAudioData(bytes.buffer.slice(0));
+
+          // Playback was reset while decoding
+          if (generationAtStart !== playbackGeneration) {
+            continue;
+          }
+
+          await new Promise<void>((resolve) => {
+            const source = ctx.createBufferSource();
+            source.buffer = audioBuffer;
+            source.connect(ctx.destination);
+
+            source.onended = () => {
+              if (currentSource === source) {
+                currentSource = null;
+              }
+              if (generationAtStart === playbackGeneration && item.onEnded) {
+                item.onEnded();
+              }
+              resolve();
+            };
+
+            currentSource = source;
+            isPlaying.value = true;
+            source.start(0);
+          });
+        } catch (chunkErr) {
+          console.warn("useAudioPlayback: failed to decode queued chunk", chunkErr);
+        }
       }
-
-      // Decode audio data
-      const audioBuffer = await ctx.decodeAudioData(bytes.buffer.slice(0));
-
-      // Stop previous playback
-      stopPlayback();
-
-      // Create and play source
-      const source = ctx.createBufferSource();
-      source.buffer = audioBuffer;
-      source.connect(ctx.destination);
-
-      source.onended = () => {
-        isPlaying.value = false;
-        currentSource = null;
-        if (onEnded) onEnded();
-      };
-
-      currentSource = source;
-      isPlaying.value = true;
-      source.start(0);
     } catch (err) {
       console.warn("useAudioPlayback: failed to play chunk", err);
-      isPlaying.value = false;
+    } finally {
+      processingQueue = false;
+      if (playbackQueue.length > 0) {
+        void processQueue();
+        return;
+      }
+      if (!currentSource && playbackQueue.length === 0) {
+        isPlaying.value = false;
+      }
     }
   }
 
@@ -68,6 +111,9 @@ export function useAudioPlayback() {
    * Stops current audio playback.
    */
   function stopPlayback() {
+    playbackGeneration++;
+    playbackQueue.length = 0;
+
     if (currentSource) {
       try {
         currentSource.stop();

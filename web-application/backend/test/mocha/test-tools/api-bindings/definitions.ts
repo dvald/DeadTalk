@@ -2,109 +2,6 @@
 
 "use strict"
 
-export interface WalletInfo {
-    /**
-     * Wallet ID
-     */
-    id: string;
-
-    /**
-     * Wallet name
-     */
-    name?: string;
-
-    /**
-     * Wallet address
-     */
-    address?: string;
-}
-
-export interface WalletCreateBody {
-    /**
-     * Wallet name (max 80 chars)
-     */
-    name: string;
-
-    /**
-     * Password to protect the wallet
-     */
-    password: string;
-
-    /**
-     * Private key (HEX). If not provided, a random one is generated.
-     */
-    private_key?: string;
-}
-
-export interface WalletCreateBadRequest {
-    /**
-     * Error Code:
-     *  - INVALID_NAME: Invalid wallet name
-     *  - TOO_MANY_WALLETS: You have too many wallets
-     *  - WEAK_PASSWORD: Password too weak
-     *  - INVALID_PRIVATE_KEY: Invalid private key provided
-     */
-    code: string;
-}
-
-export interface WalletEditBody {
-    /**
-     * Wallet name (max 80 chars)
-     */
-    name: string;
-}
-
-export interface WalletEditBadRequest {
-    /**
-     * Error Code:
-     *  - INVALID_NAME: Invalid wallet name
-     */
-    code: string;
-}
-
-export interface WalletChangePasswordBody {
-    /**
-     * Current password
-     */
-    password: string;
-
-    /**
-     * New password
-     */
-    new_password: string;
-}
-
-export interface WalletChangePasswordBadRequest {
-    /**
-     * Error Code:
-     *  - WEAK_PASSWORD: Password too weak
-     *  - WRONG_PASSWORD: Wrong current password
-     */
-    code: string;
-}
-
-export interface WalletExportBody {
-    /**
-     * Current password
-     */
-    password: string;
-}
-
-export interface WalletExportBadRequest {
-    /**
-     * Error Code:
-     *  - WRONG_PASSWORD: Wrong current password
-     */
-    code: string;
-}
-
-export interface WalletExportResponse {
-    /**
-     * Private key (HEX)
-     */
-    private_key: string;
-}
-
 export interface UserAdminListItem {
     /**
      * User ID
@@ -416,466 +313,102 @@ export interface UploadProfileImageResponse {
     url?: string;
 }
 
-export interface ExplorerSearchInformationItem {
+export interface PersonaSummary {
     /**
-     * Account balance (ETH)
+     * Persona slug identifier
      */
-    balance?: number;
+    id?: string;
 
     /**
-     * Total transactions
+     * Display name
      */
-    totalTransactions?: number;
+    name?: string;
 
     /**
-     * True if address is a contract, false if not
+     * Birth-death years
      */
-    isContract?: boolean;
+    era?: string;
 
     /**
-     * Block number
+     * Nationality
      */
-    number?: number;
+    nationality?: string;
 
     /**
-     * Mix hash
+     * Profession / title
      */
-    mixHash?: string;
+    profession?: string;
 
     /**
-     * Parent hash
+     * Avatar image path
      */
-    parentHash?: string;
+    avatar?: string;
 
     /**
-     * sha3Uncles
+     * Greeting message
      */
-    sha3Uncles?: string;
-
-    /**
-     * Logs bloom
-     */
-    logsBloom?: string;
-
-    /**
-     * Transactions root
-     */
-    transactionsRoot?: string;
-
-    /**
-     * State root
-     */
-    stateRoot?: string;
-
-    /**
-     * Receipts root
-     */
-    receiptsRoot?: string;
-
-    /**
-     * Miner address
-     */
-    miner?: string;
-
-    /**
-     * Difficulty
-     */
-    difficulty?: number;
-
-    /**
-     * Total difficulty
-     */
-    totalDifficulty?: number;
-
-    /**
-     * Extra data
-     */
-    extraData?: string;
-
-    /**
-     * Block size
-     */
-    size?: number;
-
-    /**
-     * Gas limit
-     */
-    gasLimit?: number;
-
-    /**
-     * Gas used
-     */
-    gasUsed?: number;
-
-    /**
-     * Base fee per gas
-     */
-    baseFeePerGas?: number;
-
-    /**
-     * Block timestamp
-     */
-    timestamp?: number;
-
-    transactions?: string[];
-
-    /**
-     * Block hash
-     */
-    blockHash?: string;
-
-    /**
-     * Block number
-     */
-    blockNumber?: number;
-
-    /**
-     * Chain ID
-     */
-    chainId?: string;
-
-    /**
-     * From address
-     */
-    from?: string;
-
-    /**
-     * Gas
-     */
-    gas?: number;
-
-    /**
-     * Gas price
-     */
-    gasPrice?: number;
-
-    /**
-     * Max priority fee per gas
-     */
-    maxPriorityFeePerGas?: number;
-
-    /**
-     * Max fee per gas
-     */
-    maxFeePerGas?: number;
-
-    /**
-     * Block or transaction hash
-     */
-    hash?: string;
-
-    /**
-     * Transaction input
-     */
-    input?: string;
-
-    /**
-     * Nonce
-     */
-    nonce?: string;
-
-    /**
-     * To address
-     */
-    to?: string;
-
-    /**
-     * Transaction index
-     */
-    transactionIndex?: number;
-
-    /**
-     * Transaction type
-     */
-    type?: number;
-
-    /**
-     * Transaction value
-     */
-    value?: number;
-
-    /**
-     * y parity
-     */
-    yParity?: number;
-
-    /**
-     * V
-     */
-    v?: string;
-
-    /**
-     * R
-     */
-    r?: string;
-
-    /**
-     * S
-     */
-    s?: string;
+    firstMessage?: string;
 }
 
-export interface ExplorerSearchInformation {
+export interface PersonaEmotionalTrigger {
     /**
-     * Mode: account, block, transaction
+     * Emotional mode (e.g. "angry")
      */
-    mode: string;
+    emotion?: string;
 
-    info?: ExplorerSearchInformationItem;
+    /**
+     * Trigger context for that emotion
+     */
+    trigger?: string;
 }
 
-export interface BlockInformationMin {
+export interface PersonaDetail {
     /**
-     * Block number
+     * Persona slug identifier
      */
-    number?: number;
+    id?: string;
 
     /**
-     * Block hash
+     * Display name
      */
-    hash?: string;
+    name?: string;
 
     /**
-     * Miner address
+     * Birth-death years
      */
-    miner?: string;
+    era?: string;
 
     /**
-     * Block size
+     * Nationality
      */
-    size?: number;
+    nationality?: string;
 
     /**
-     * Timestamp
+     * Profession / title
      */
-    timestamp?: number;
+    profession?: string;
 
     /**
-     * Transactions length
+     * Avatar image path
      */
-    transactions?: number;
+    avatar?: string;
+
+    /**
+     * Greeting message
+     */
+    firstMessage?: string;
+
+    emotionalProfile?: PersonaEmotionalTrigger[];
+
+    searchKeywords?: string[];
 }
 
-export interface GetBlocks {
-    blocks: BlockInformationMin[];
-
+export interface PersonaNotFoundError {
     /**
-     * Continuation block number
+     * Error code:
+     *  - PERSONA_NOT_FOUND: Persona was not found
      */
-    continuationBlock?: number;
-}
-
-export interface BlockInformation {
-    /**
-     * Block number
-     */
-    number?: number;
-
-    /**
-     * Block hash
-     */
-    hash?: string;
-
-    /**
-     * Mix hash
-     */
-    mixHash?: string;
-
-    /**
-     * Parent hash
-     */
-    parentHash?: string;
-
-    /**
-     * Nonce
-     */
-    nonce?: string;
-
-    /**
-     * sha3Uncles
-     */
-    sha3Uncles?: string;
-
-    /**
-     * Logs bloom
-     */
-    logsBloom?: string;
-
-    /**
-     * Transactions root
-     */
-    transactionsRoot?: string;
-
-    /**
-     * State root
-     */
-    stateRoot?: string;
-
-    /**
-     * Receipts root
-     */
-    receiptsRoot?: string;
-
-    /**
-     * Miner address
-     */
-    miner?: string;
-
-    /**
-     * Difficulty
-     */
-    difficulty?: number;
-
-    /**
-     * Total difficulty
-     */
-    totalDifficulty?: number;
-
-    /**
-     * Extra data
-     */
-    extraData?: string;
-
-    /**
-     * Block size
-     */
-    size?: number;
-
-    /**
-     * Gas limit
-     */
-    gasLimit?: number;
-
-    /**
-     * Gas used
-     */
-    gasUsed?: number;
-
-    /**
-     * Base fee per gas
-     */
-    baseFeePerGas?: number;
-
-    /**
-     * Block timestamp
-     */
-    timestamp?: number;
-
-    transactions?: string[];
-}
-
-export interface AccountInformation {
-    /**
-     * Account balance
-     */
-    balance?: number;
-
-    /**
-     * Total transactions
-     */
-    totalTransactions?: number;
-
-    /**
-     * True if address is a contract, false if not
-     */
-    isContract?: boolean;
-}
-
-export interface TransactionInformation {
-    /**
-     * Block hash
-     */
-    blockHash?: string;
-
-    /**
-     * Block number
-     */
-    blockNumber?: number;
-
-    /**
-     * Chain ID
-     */
-    chainId?: string;
-
-    /**
-     * From address
-     */
-    from?: string;
-
-    /**
-     * Gas
-     */
-    gas?: number;
-
-    /**
-     * Gas price
-     */
-    gasPrice?: number;
-
-    /**
-     * Max priority fee per gas
-     */
-    maxPriorityFeePerGas?: number;
-
-    /**
-     * Max fee per gas
-     */
-    maxFeePerGas?: number;
-
-    /**
-     * Transaction hash
-     */
-    hash?: string;
-
-    /**
-     * Transaction input
-     */
-    input?: string;
-
-    /**
-     * Nonce
-     */
-    nonce?: string;
-
-    /**
-     * To address
-     */
-    to?: string;
-
-    /**
-     * Transaction index
-     */
-    transactionIndex?: number;
-
-    /**
-     * Transaction type
-     */
-    type?: number;
-
-    /**
-     * Transaction value
-     */
-    value?: number;
-
-    /**
-     * y parity
-     */
-    yParity?: number;
-
-    /**
-     * V
-     */
-    v?: string;
-
-    /**
-     * R
-     */
-    r?: string;
-
-    /**
-     * S
-     */
-    s?: string;
+    code: string;
 }
 
 export interface ErrorResponse {

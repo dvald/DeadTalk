@@ -320,7 +320,7 @@ export class ConversationEngineService {
             modelId: "eleven_multilingual_v2",
         });
 
-        // Send audio chunk as base64
+        // Send as a single base64 payload (not incremental TTS streaming yet)
         const audioBase64 = audioBuffer.toString("base64");
 
         WsOrchestratorService.getInstance().emitAgentSpeaking(

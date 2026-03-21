@@ -3,7 +3,7 @@
 "use strict";
 
 import Express from "express";
-import { noCache, NOT_FOUND, sendApiResult } from "../../utils/http-utils";
+import { noCache, NOT_FOUND, sendApiError, sendApiResult } from "../../utils/http-utils";
 import { Controller } from "../controller";
 import { PersonasConfig } from "../../config/personas";
 
@@ -19,6 +19,12 @@ import { PersonasConfig } from "../../config/personas";
  */
 
 /**
+ * @typedef PersonaEmotionalTrigger
+ * @property {string} emotion - Emotional mode (e.g. "angry")
+ * @property {string} trigger - Trigger context for that emotion
+ */
+
+/**
  * @typedef PersonaDetail
  * @property {string} id - Persona slug identifier
  * @property {string} name - Display name
@@ -27,8 +33,14 @@ import { PersonasConfig } from "../../config/personas";
  * @property {string} profession - Profession / title
  * @property {string} avatar - Avatar image path
  * @property {string} firstMessage - Greeting message
- * @property {Array} emotionalProfile - Emotional triggers
- * @property {Array} searchKeywords - Search context keywords
+ * @property {Array.<PersonaEmotionalTrigger>} emotionalProfile - Emotional triggers
+ * @property {Array.<string>} searchKeywords - Search context keywords
+ */
+
+/**
+ * @typedef PersonaNotFoundError
+ * @property {string} code.required - Error code:
+ *  - PERSONA_NOT_FOUND: Persona was not found
  */
 
 /**
@@ -37,39 +49,37 @@ import { PersonasConfig } from "../../config/personas";
  */
 export class PersonasController extends Controller {
     public registerAPI(prefix: string, application: Express.Express): any {
-        /**
-         * Lists all available personas
-         * Binding: ListPersonas
-         * @route GET /personas
-         * @group personas
-         * @returns {Array.<PersonaSummary>} 200 - List of personas
-         */
         application.get(prefix + "/personas", noCache(this.listPersonas.bind(this)));
-
-        /**
-         * Gets a specific persona by ID
-         * Binding: GetPersona
-         * @route GET /personas/:id
-         * @group personas
-         * @param {string} id.path.required - Persona slug (e.g., "tesla")
-         * @returns {PersonaDetail.model} 200 - Persona details
-         * @returns {ErrorResponse.model} 404 - Not found
-         */
         application.get(prefix + "/personas/:id", noCache(this.getPersona.bind(this)));
     }
 
+    /**
+     * Lists all available personas
+     * Binding: ListPersonas
+     * @route GET /personas
+     * @group personas
+     * @returns {Array.<PersonaSummary>} 200 - List of personas
+     */
     public async listPersonas(request: Express.Request, response: Express.Response) {
         const personas = PersonasConfig.getInstance().listPersonas();
         sendApiResult(request, response, personas);
     }
 
+    /**
+     * Gets a specific persona by ID
+     * Binding: GetPersona
+     * @route GET /personas/{id}
+     * @group personas
+     * @param {string} id.path.required - Persona slug (e.g., "tesla")
+     * @returns {PersonaDetail.model} 200 - Persona details
+     * @returns {PersonaNotFoundError.model} 404 - Not found
+     */
     public async getPersona(request: Express.Request, response: Express.Response) {
         const id = request.params.id || "";
         const persona = PersonasConfig.getInstance().getPersonaById(id);
 
         if (!persona) {
-            response.status(NOT_FOUND);
-            response.json({ result: "error", code: "PERSONA_NOT_FOUND", message: "Persona not found: " + id });
+            sendApiError(request, response, NOT_FOUND, "PERSONA_NOT_FOUND", "Persona not found: " + id);
             return;
         }
 

@@ -61,6 +61,8 @@
 </template>
 
 <script setup lang="ts">
+import { Request } from "@asanrom/request-browser";
+import { ApiPersonas } from "~/api/api-group-personas";
 import type { PersonaSummary } from "~/models/session";
 
 definePageMeta({
@@ -73,7 +75,7 @@ const router = useRouter();
 const sessionStore = useSessionStore();
 
 useHead(() => ({
-  title: t("DeadTalk — Talk to History"),
+  title: t("DeadTalk - Talk to History"),
 }));
 
 // Fetch personas from API
@@ -82,16 +84,31 @@ const isLoading = ref(true);
 
 onMounted(async () => {
   try {
-    // Try to fetch from API; fallback to hardcoded list
-    const apiBase = import.meta.env.DEV
-      ? (import.meta.env.VITE__DEV_TEST_HOST || "http://localhost") + "/api/v1"
-      : "/api/v1";
-
-    const response = await fetch(apiBase + "/personas");
-    if (response.ok) {
-      const data = await response.json();
-      personas.value = Array.isArray(data) ? data : [];
-    }
+    await new Promise<void>((resolve, reject) => {
+      Request.Do(ApiPersonas.ListPersonas())
+        .onSuccess((data) => {
+          const normalized: PersonaSummary[] = (Array.isArray(data) ? data : []).map((p) => ({
+            id: p.id || "",
+            name: p.name || "",
+            era: p.era || "",
+            nationality: p.nationality || "",
+            profession: p.profession || "",
+            avatar: p.avatar || "",
+            firstMessage: p.firstMessage || "",
+          }));
+          personas.value = normalized;
+          resolve();
+        })
+        .onRequestError((err, handleErr) => {
+          handleErr(err, {
+            temporalError: () => reject(err),
+            serverError: () => reject(err),
+            networkError: () => reject(err),
+          });
+        })
+        .onCancel(() => reject(new Error("List personas request cancelled")))
+        .onUnexpectedError((err) => reject(err));
+    });
   } catch (_err) {
     // Fallback: hardcoded personas
     personas.value = [

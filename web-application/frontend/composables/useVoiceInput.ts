@@ -35,7 +35,12 @@ export function useVoiceInput(sendMessage: (msg: any) => void) {
       // Dynamically import VAD to avoid SSR issues
       const { MicVAD } = await import("@ricky0123/vad-web");
 
+      const vadAssetBase = "https://cdn.jsdelivr.net/npm/@ricky0123/vad-web@0.0.30/dist/";
+      const onnxWasmBase = "https://cdn.jsdelivr.net/npm/onnxruntime-web@1.24.3/dist/";
+
       vadInstance = await MicVAD.new({
+        baseAssetPath: vadAssetBase,
+        onnxWASMBasePath: onnxWasmBase,
         getStream: async () => mediaStream!,
         onSpeechStart: () => {
           isSpeaking.value = true;
@@ -153,9 +158,13 @@ function writeString(view: DataView, offset: number, str: string) {
 
 function arrayBufferToBase64(buffer: ArrayBuffer): string {
   const bytes = new Uint8Array(buffer);
-  let binary = "";
-  for (let i = 0; i < bytes.length; i++) {
-    binary += String.fromCharCode(bytes[i]);
+  const chunkSize = 0x8000;
+  const binaryChunks: string[] = [];
+
+  for (let i = 0; i < bytes.length; i += chunkSize) {
+    const chunk = bytes.subarray(i, i + chunkSize);
+    binaryChunks.push(String.fromCharCode.apply(null, Array.from(chunk)));
   }
-  return btoa(binary);
+
+  return btoa(binaryChunks.join(""));
 }
