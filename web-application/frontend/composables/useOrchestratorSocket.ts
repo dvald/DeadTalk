@@ -27,7 +27,13 @@ export function useOrchestratorSocket() {
     });
 
     // VueUse WebSocket (auto-imported by @vueuse/nuxt)
-    const { status, data, send: wsSend, open, close } = useWebSocket(wsUrl, {
+    const {
+        status,
+        data,
+        send: wsSend,
+        open,
+        close,
+    } = useWebSocket(wsUrl, {
         autoReconnect: {
             retries: 5,
             delay: 2000,
