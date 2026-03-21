@@ -11,9 +11,17 @@ import { Monitor } from "../monitor";
  */
 export interface ChatMessage {
     role: "system" | "user" | "assistant" | "tool";
-    content: string;
+    content: string | null;
     toolCallId?: string;
     name?: string;
+    toolCalls?: Array<{
+        id: string;
+        type: "function";
+        function: {
+            name: string;
+            arguments: string;
+        };
+    }>;
 }
 
 /**
@@ -90,7 +98,10 @@ export class OpenAIService {
                     if (m.toolCallId) {
                         msg.tool_call_id = m.toolCallId;
                     }
-                    if (m.name) {
+                    if (m.toolCalls && m.toolCalls.length > 0) {
+                        msg.tool_calls = m.toolCalls;
+                    }
+                    if (m.name && m.role !== "tool") {
                         msg.name = m.name;
                     }
                     return msg;
@@ -184,10 +195,10 @@ export class OpenAIService {
             }
 
             // Add the assistant message with tool calls to history
-            const assistantMsg: any = {
+            const assistantMsg: ChatMessage = {
                 role: "assistant",
                 content: result.response || null,
-                tool_calls: result.toolCalls.map((tc) => ({
+                toolCalls: result.toolCalls.map((tc) => ({
                     id: tc.id,
                     type: "function",
                     function: {
@@ -207,7 +218,6 @@ export class OpenAIService {
                         role: "tool",
                         content: toolResult,
                         toolCallId: tc.id,
-                        name: tc.name,
                     });
                     resolvedToolCalls.push(tc);
                 } catch (err) {
@@ -216,7 +226,6 @@ export class OpenAIService {
                         role: "tool",
                         content: JSON.stringify({ error: "Tool execution failed: " + (err as Error).message }),
                         toolCallId: tc.id,
-                        name: tc.name,
                     });
                 }
             }
