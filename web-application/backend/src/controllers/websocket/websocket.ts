@@ -108,6 +108,10 @@ export class WebsocketController {
                 break;
             case "start-session":
                 {
+                    if (this.sessionId) {
+                        ConversationEngineService.getInstance().endConversation(this.sessionId);
+                        WsOrchestratorService.getInstance().removeSession(this.sessionId);
+                    }
                     const sessionType = msg.sessionType === "conversation" ? "conversation" : "debate";
                     const sessionId = WsOrchestratorService.getInstance()
                         .registerSession(this, sessionType, msg.config || {});
@@ -124,6 +128,10 @@ export class WebsocketController {
                 break;
             case "start-conversation":
                 {
+                    if (this.sessionId) {
+                        ConversationEngineService.getInstance().endConversation(this.sessionId);
+                        WsOrchestratorService.getInstance().removeSession(this.sessionId);
+                    }
                     const personaId = msg.personaId || "";
                     const sessionId = WsOrchestratorService.getInstance()
                         .registerSession(this, "conversation", { personaId: personaId });
