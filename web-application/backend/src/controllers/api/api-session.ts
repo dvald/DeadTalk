@@ -45,18 +45,29 @@ export class SessionController extends Controller {
      * Generates a memorable quote from the conversation transcript using LLM.
      * Takes the full conversation and distills it into a single evocative line
      * that captures the essence of the exchange with the historical figure.
-     * Binding: GenerateQuoteRequest
+     * Binding: GenerateQuote
      * @route POST /session/generate-quote
      * @group session
      * @param {GenerateQuoteRequest.model} request.body.required - Transcript and persona info
      * @returns {GenerateQuoteResponse.model} 200 - Generated quote
      * @returns {GenerateQuoteError.model} 400 - Invalid input
+     * @returns {GenerateQuoteError.model} 500 - Generation failed (GENERATION_FAILED)
      */
-    private async generateQuote(req: Express.Request, res: Express.Response) {
+    public async generateQuote(req: Express.Request, res: Express.Response) {
         const { personaName, transcript } = req.body;
 
-        if (!personaName || !transcript || !Array.isArray(transcript) || transcript.length === 0) {
+        if (!personaName || typeof personaName !== "string") {
             return sendApiError(req, res, 400, "INVALID_INPUT");
+        }
+        if (!transcript || !Array.isArray(transcript) || transcript.length === 0) {
+            return sendApiError(req, res, 400, "INVALID_INPUT");
+        }
+
+        // Validate each transcript entry has required shape
+        for (const entry of transcript) {
+            if (!entry || typeof entry.role !== "string" || typeof entry.text !== "string") {
+                return sendApiError(req, res, 400, "INVALID_INPUT");
+            }
         }
 
         try {

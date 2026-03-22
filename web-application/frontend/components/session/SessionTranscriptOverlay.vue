@@ -30,10 +30,6 @@ const props = defineProps({
         type: String as PropType<string>,
         default: "",
     },
-    personaName: {
-        type: String as PropType<string>,
-        default: "",
-    },
 });
 
 const isAgent = computed(() => !!props.agentTranscript);

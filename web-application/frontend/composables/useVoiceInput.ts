@@ -182,8 +182,8 @@ export function useVoiceInput(sendMessage: (msg: any) => void, isAgentPlaying?: 
         pttWaitingForSpeechEnd = false;
         isSpeaking.value = true;
 
-        // Ensure VAD is running
-        if (vadInstance) {
+        // Ensure VAD is running, but not while agent is playing (echo suppression)
+        if (vadInstance && !isAgentPlaying?.value) {
             try {
                 vadInstance.start();
             } catch {

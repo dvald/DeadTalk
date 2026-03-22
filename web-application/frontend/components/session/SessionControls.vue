@@ -217,20 +217,16 @@ const statusLabelClass = computed(() => {
 let pttActive = false;
 
 function onPttDown() {
-    console.log("[PTT] pointerdown fired, pttActive:", pttActive);
     if (pttActive) return;
     pttActive = true;
-    console.log("[PTT] emitting push-start");
     emit("push-start");
     window.addEventListener("pointerup", onPttUp, { once: true });
     window.addEventListener("pointercancel", onPttUp, { once: true });
 }
 
 function onPttUp() {
-    console.log("[PTT] pointerup/cancel fired, pttActive:", pttActive);
     if (!pttActive) return;
     pttActive = false;
-    console.log("[PTT] emitting push-end");
     emit("push-end");
     window.removeEventListener("pointerup", onPttUp);
     window.removeEventListener("pointercancel", onPttUp);

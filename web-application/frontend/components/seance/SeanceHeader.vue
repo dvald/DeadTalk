@@ -26,17 +26,7 @@
                     {{ $t("Archive Verified") }}
                 </span>
             </div>
-            <button class="text-[#e4e1e9]/40 hover:text-[#d4a853] transition-all duration-500">
-                <svg
-                    class="w-6 h-6"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="1.5"
-                >
-                    <path d="M4 19.5v-15A2.5 2.5 0 016.5 2H20v20H6.5a2.5 2.5 0 010-5H20" />
-                </svg>
-            </button>
+            <slot name="header-action" />
         </div>
     </header>
 </template>
