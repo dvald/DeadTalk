@@ -178,12 +178,13 @@
 
 <script setup lang="ts">
 import { Request } from "@asanrom/request-browser";
+import { ApiCharacters } from "~/api/api-group-characters";
 
 definePageMeta({
     layout: "seance",
 });
 
-const { t: $t, locale } = useI18n();
+const { t: $t } = useI18n();
 const localePath = useLocalePath();
 const router = useRouter();
 const sessionStore = useSessionStore();
@@ -229,7 +230,7 @@ function setStepDone(id: string) {
     }
 }
 
-async function startCreation() {
+function startCreation() {
     if (!characterName.value.trim()) return;
 
     isCreating.value = true;
@@ -261,42 +262,30 @@ async function startCreation() {
         }, 45000),
     ];
 
-    try {
-        const apiBase = import.meta.env.VITE__DEV_TEST_HOST || "";
-
-        const response = await fetch(apiBase + "/api/v1/characters/create", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                name: characterName.value.trim(),
-                hints: hints.value.trim() || undefined,
-            }),
+    Request.Do(
+        ApiCharacters.CreateCharacter({
+            name: characterName.value.trim(),
+            hints: hints.value.trim() || undefined,
+        }),
+    )
+        .onSuccess((data) => {
+            for (const t of stepTimers) clearTimeout(t);
+            for (const step of progressSteps.value) {
+                step.done = true;
+                step.active = false;
+            }
+            isCreating.value = false;
+            createdPersona.value = data;
+        })
+        .onRequestError(() => {
+            for (const t of stepTimers) clearTimeout(t);
+            isCreating.value = false;
+            errorMessage.value = "Something went wrong";
+        })
+        .onCancel(() => {
+            for (const t of stepTimers) clearTimeout(t);
+            isCreating.value = false;
         });
-
-        // Clear timers
-        for (const t of stepTimers) clearTimeout(t);
-
-        if (!response.ok) {
-            const errData = await response.json().catch(() => ({}));
-            throw new Error(errData.message || "Creation failed (HTTP " + response.status + ")");
-        }
-
-        const data = await response.json();
-
-        // Mark all steps done
-        for (const step of progressSteps.value) {
-            step.done = true;
-            step.active = false;
-        }
-
-        isCreating.value = false;
-        createdPersona.value = data;
-    } catch (err) {
-        // Clear timers
-        for (const t of stepTimers) clearTimeout(t);
-        isCreating.value = false;
-        errorMessage.value = (err as Error).message || "Something went wrong";
-    }
 }
 
 function startConversation() {

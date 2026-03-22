@@ -75,7 +75,7 @@ const GREETINGS_ES = [
  * 3. Voice creation (ElevenLabsService — Voice Design / IVC)
  * 4. System prompt synthesis
  *
- * Persists custom personas to a JSON file so they survive restarts.
+ * Persists custom personas via the CustomPersona model (MongoDB) so they survive restarts.
  */
 export class CharacterCreationService {
     /* Singleton */

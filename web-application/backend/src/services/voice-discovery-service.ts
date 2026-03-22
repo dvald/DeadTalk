@@ -167,28 +167,44 @@ export class VoiceDiscoveryService {
 
     /**
      * Validates an audio URL by making a HEAD request.
+     * Follows up to 5 redirects and accepts any 2xx status.
      */
     private validateAudioUrl(url: string): Promise<boolean> {
+        const MAX_REDIRECTS = 5;
         return new Promise((resolve) => {
-            try {
-                const urlObj = new URL(url);
-                const options = {
-                    hostname: urlObj.hostname,
-                    path: urlObj.pathname + urlObj.search,
-                    method: "HEAD",
-                    timeout: 10000,
-                };
+            const attempt = (currentUrl: string, redirectsLeft: number) => {
+                try {
+                    const urlObj = new URL(currentUrl);
+                    const options = {
+                        hostname: urlObj.hostname,
+                        path: urlObj.pathname + urlObj.search,
+                        method: "HEAD",
+                        timeout: 10000,
+                    };
 
-                const client = url.startsWith("https") ? HTTPS : require("http");
-                const req = client.request(options, (res: any) => {
-                    resolve(res.statusCode === 200);
-                });
-                req.on("error", () => resolve(false));
-                req.on("timeout", () => { req.destroy(); resolve(false); });
-                req.end();
-            } catch {
-                resolve(false);
-            }
+                    const client = urlObj.protocol === "https:" ? HTTPS : HTTP;
+                    const req = client.request(options, (res: any) => {
+                        const status = res.statusCode || 0;
+                        if (status >= 200 && status < 300) {
+                            resolve(true);
+                            return;
+                        }
+                        if (status >= 300 && status < 400 && res.headers?.location && redirectsLeft > 0) {
+                            const nextUrl = new URL(res.headers.location as string, currentUrl).toString();
+                            res.resume();
+                            attempt(nextUrl, redirectsLeft - 1);
+                            return;
+                        }
+                        resolve(false);
+                    });
+                    req.on("error", () => resolve(false));
+                    req.on("timeout", () => { req.destroy(); resolve(false); });
+                    req.end();
+                } catch {
+                    resolve(false);
+                }
+            };
+            attempt(url, MAX_REDIRECTS);
         });
     }
 

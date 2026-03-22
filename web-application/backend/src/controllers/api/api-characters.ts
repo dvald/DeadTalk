@@ -16,8 +16,24 @@ import { Monitor } from "../../monitor";
  */
 
 /**
+ * @typedef CharacterCreateResponse
+ * @property {string} id - Persona unique identifier
+ * @property {string} name - Display name
+ * @property {string} era - Birth-death years
+ * @property {string} nationality - Nationality
+ * @property {string} profession - Profession / title
+ * @property {string} image - Portrait image (data URL or empty)
+ * @property {string} voiceSource - How the voice was created (cloned, designed, default)
+ * @property {string} voiceId - ElevenLabs voice ID
+ * @property {string} firstMessage - English greeting
+ * @property {string} firstMessageEs - Spanish greeting
+ * @property {string} quote - Famous quote
+ * @property {boolean} isCustom - Always true for custom characters
+ */
+
+/**
  * @typedef CharacterSummary
- * @property {string} id - Persona slug identifier
+ * @property {string} id - Persona unique identifier
  * @property {string} name - Display name
  * @property {string} era - Birth-death years
  * @property {string} profession - Profession / title
@@ -28,7 +44,8 @@ import { Monitor } from "../../monitor";
 
 /**
  * Characters API — endpoints for creating and managing custom historical characters.
- * Binding: CharacterCreateBody
+ * Note: This endpoint triggers multiple external API calls (Firecrawl, image generation,
+ * ElevenLabs) and should be rate-limited in production.
  * @group characters - Custom Characters
  */
 export class CharactersController extends Controller {
@@ -41,13 +58,13 @@ export class CharactersController extends Controller {
     /**
      * Creates a new custom historical character.
      * Researches the figure via Firecrawl, generates portrait, creates voice.
-     * Binding: CharacterCreateBody
+     * Binding: CreateCharacter
      * @route POST /characters/create
      * @group characters
      * @param {CharacterCreateBody.model} request.body.required - Character creation request
-     * @returns {CharacterSummary.model} 200 - Created character
+     * @returns {CharacterCreateResponse.model} 200 - Created character
      */
-    private async createCharacter(request: Express.Request, response: Express.Response) {
+    public async createCharacter(request: Express.Request, response: Express.Response) {
         const { name, hints, photoBase64 } = request.body || {};
 
         if (!name || typeof name !== "string" || name.trim().length === 0) {
@@ -83,11 +100,12 @@ export class CharactersController extends Controller {
 
     /**
      * Lists all custom characters.
+     * Binding: ListCharacters
      * @route GET /characters
      * @group characters
      * @returns {Array.<CharacterSummary>} 200 - List of custom characters
      */
-    private async listCharacters(request: Express.Request, response: Express.Response) {
+    public async listCharacters(request: Express.Request, response: Express.Response) {
         const personas = await CharacterCreationService.getInstance().listCustomPersonas();
 
         sendApiResult(request, response, personas.map(p => ({
@@ -103,12 +121,13 @@ export class CharactersController extends Controller {
 
     /**
      * Gets a specific custom character by ID.
-     * @route GET /characters/:id
+     * Binding: GetCharacter
+     * @route GET /characters/{id}
      * @group characters
      * @param {string} id.path.required - Character ID
-     * @returns {CharacterSummary.model} 200 - Character details
+     * @returns {CharacterCreateResponse.model} 200 - Character details
      */
-    private async getCharacter(request: Express.Request, response: Express.Response) {
+    public async getCharacter(request: Express.Request, response: Express.Response) {
         const id = request.params.id;
         const persona = await CharacterCreationService.getInstance().getCustomPersona(id);
 

@@ -175,7 +175,7 @@
 </template>
 
 <script setup lang="ts">
-import type { ConversationEntry } from "~/models/session";
+import type { ConversationEntry } from "~/api/definitions";
 
 const props = defineProps<{
     visible: boolean;

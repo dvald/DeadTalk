@@ -18,6 +18,7 @@ import { Monitor } from "../../monitor";
  * @typedef ConversationEntry
  * @property {string} role.required - "user" or "agent"
  * @property {string} text.required - Message text
+ * @property {number} timestamp - Unix timestamp in ms
  */
 
 /**

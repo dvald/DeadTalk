@@ -5,6 +5,8 @@
             <!-- Hamburger button -->
             <button
                 class="w-10 h-10 flex flex-col items-center justify-center gap-1.5 rounded-sm bg-[#1b1b20]/80 border border-[#d4a853]/10 text-[#e4e1e9]/60 hover:text-[#d4a853] hover:border-[#d4a853]/30 transition-all duration-500"
+                :aria-label="$t('Menu')"
+                :aria-expanded="showMenu"
                 @click="showMenu = !showMenu"
             >
                 <span
@@ -38,7 +40,10 @@
                         @click="switchLang('en')"
                     >
                         English
-                        <span v-if="locale === 'en'" class="w-1.5 h-1.5 rounded-full bg-[#d4a853]" />
+                        <span
+                            v-if="locale === 'en'"
+                            class="w-1.5 h-1.5 rounded-full bg-[#d4a853]"
+                        />
                     </button>
                     <button
                         class="w-full px-4 py-3 text-left text-sm flex items-center justify-between hover:bg-[#d4a853]/10 transition-all duration-300"
@@ -46,7 +51,10 @@
                         @click="switchLang('es')"
                     >
                         Español
-                        <span v-if="locale === 'es'" class="w-1.5 h-1.5 rounded-full bg-[#d4a853]" />
+                        <span
+                            v-if="locale === 'es'"
+                            class="w-1.5 h-1.5 rounded-full bg-[#d4a853]"
+                        />
                     </button>
                 </div>
             </Transition>

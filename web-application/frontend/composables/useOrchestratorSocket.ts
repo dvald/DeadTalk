@@ -136,7 +136,6 @@ export function useOrchestratorSocket() {
             case "agent-error":
                 agentErrorMessage.value = (msg as any).message || "Unknown error";
                 break;
-
         }
     });
 
