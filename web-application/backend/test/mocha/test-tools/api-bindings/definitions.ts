@@ -345,6 +345,21 @@ export interface PersonaSummary {
     avatar?: string;
 
     /**
+     * Portrait image path
+     */
+    image?: string;
+
+    /**
+     * Famous quote (English)
+     */
+    quote?: string;
+
+    /**
+     * Famous quote (Spanish)
+     */
+    quoteEs?: string;
+
+    /**
      * Greeting message (English)
      */
     firstMessage?: string;
@@ -397,6 +412,21 @@ export interface PersonaDetail {
      * Avatar image path
      */
     avatar?: string;
+
+    /**
+     * Portrait image path
+     */
+    image?: string;
+
+    /**
+     * Famous quote (English)
+     */
+    quote?: string;
+
+    /**
+     * Famous quote (Spanish)
+     */
+    quoteEs?: string;
 
     /**
      * Greeting message (English)

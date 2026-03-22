@@ -67,6 +67,7 @@ export function useOrchestratorSocket() {
         } catch {
             return;
         }
+        console.log("[WS] received:", msg.event);
 
         switch (msg.event) {
             case "hello":
@@ -163,7 +164,9 @@ export function useOrchestratorSocket() {
      * @param message The message object to send
      */
     function send(message: any) {
-        wsSend(JSON.stringify(message));
+        const json = JSON.stringify(message);
+        console.log("[WS] send:", message.type, "payload size:", json.length, "ws status:", status.value);
+        wsSend(json);
     }
 
     return {
