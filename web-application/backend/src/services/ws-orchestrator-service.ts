@@ -4,7 +4,9 @@
 
 import { Monitor } from "../monitor";
 import { WebsocketController } from "../controllers/websocket/websocket";
-import { SourceCardData, AgentSpeakingEvent, SourceCitedEvent, AgentFinishedEvent, SessionEndEvent } from "../models/ws-events";
+import {
+    SourceCardData, AgentSpeakingEvent, SourceCitedEvent, AgentFinishedEvent, SessionEndEvent,
+} from "../models/ws-events";
 
 /**
  * Active WebSocket session
@@ -175,4 +177,5 @@ export class WsOrchestratorService {
         this.broadcastToSession(sessionId, event);
         this.removeSession(sessionId);
     }
+
 }

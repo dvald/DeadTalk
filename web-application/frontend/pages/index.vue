@@ -1,5 +1,57 @@
 <template>
     <div class="bg-[#0a0a0c] text-[#e4e1e9] overflow-x-hidden">
+        <!-- Hamburger menu -->
+        <div class="fixed top-6 right-6 z-[60]">
+            <!-- Hamburger button -->
+            <button
+                class="w-10 h-10 flex flex-col items-center justify-center gap-1.5 rounded-sm bg-[#1b1b20]/80 border border-[#d4a853]/10 text-[#e4e1e9]/60 hover:text-[#d4a853] hover:border-[#d4a853]/30 transition-all duration-500"
+                @click="showMenu = !showMenu"
+            >
+                <span
+                    class="block w-4 h-px bg-current transition-all duration-300"
+                    :class="showMenu ? 'rotate-45 translate-y-[3.5px]' : ''"
+                />
+                <span
+                    class="block w-4 h-px bg-current transition-all duration-300"
+                    :class="showMenu ? '-rotate-45 -translate-y-[3.5px]' : ''"
+                />
+            </button>
+
+            <!-- Menu dropdown -->
+            <Transition
+                enter-active-class="transition-all duration-300"
+                leave-active-class="transition-all duration-200"
+                enter-from-class="opacity-0 -translate-y-2"
+                leave-to-class="opacity-0 -translate-y-2"
+            >
+                <div
+                    v-if="showMenu"
+                    class="absolute right-0 mt-2 w-48 rounded-sm bg-[#1b1b20]/95 border border-[#d4a853]/10 backdrop-blur-xl overflow-hidden shadow-xl"
+                >
+                    <!-- Language section -->
+                    <div class="px-4 py-2 border-b border-[#d4a853]/5">
+                        <span class="text-[8px] uppercase tracking-[0.2em] text-[#d4a853]/40">{{ $t("Language") }}</span>
+                    </div>
+                    <button
+                        class="w-full px-4 py-3 text-left text-sm flex items-center justify-between hover:bg-[#d4a853]/10 transition-all duration-300"
+                        :class="locale === 'en' ? 'text-[#d4a853]' : 'text-[#e4e1e9]/60'"
+                        @click="switchLang('en')"
+                    >
+                        English
+                        <span v-if="locale === 'en'" class="w-1.5 h-1.5 rounded-full bg-[#d4a853]" />
+                    </button>
+                    <button
+                        class="w-full px-4 py-3 text-left text-sm flex items-center justify-between hover:bg-[#d4a853]/10 transition-all duration-300"
+                        :class="locale === 'es' ? 'text-[#d4a853]' : 'text-[#e4e1e9]/60'"
+                        @click="switchLang('es')"
+                    >
+                        Español
+                        <span v-if="locale === 'es'" class="w-1.5 h-1.5 rounded-full bg-[#d4a853]" />
+                    </button>
+                </div>
+            </Transition>
+        </div>
+
         <!-- Grain overlay -->
         <div class="grain-overlay" />
 
@@ -141,6 +193,34 @@
                             </div>
                         </div>
                     </button>
+
+                    <!-- Create Your Own card -->
+                    <button
+                        class="group relative spirit-card rounded-sm overflow-hidden p-2 transition-all duration-1000 hover:-translate-y-2 text-left cursor-pointer border border-dashed border-[#d4a853]/20 hover:border-[#d4a853]/40"
+                        @click="router.push(localePath('/create-character'))"
+                    >
+                        <div class="card-aura absolute inset-0 pointer-events-none" />
+                        <div class="aspect-[3/4] relative overflow-hidden bg-black/20 flex flex-col items-center justify-center gap-6">
+                            <div
+                                class="w-20 h-20 rounded-full border border-[#d4a853]/30 flex items-center justify-center group-hover:border-[#d4a853]/60 transition-all duration-700"
+                            >
+                                <span
+                                    class="heading-font italic text-4xl text-[#d4a853]/40 group-hover:text-[#d4a853]/80 transition-all duration-700"
+                                    >+</span
+                                >
+                            </div>
+                            <div class="text-center space-y-2 px-8">
+                                <h3
+                                    class="heading-font italic text-2xl text-[#e4e1e9]/70 group-hover:text-[#e4e1e9] transition-all duration-700"
+                                >
+                                    {{ $t("Create Your Own") }}
+                                </h3>
+                                <p class="text-[10px] uppercase tracking-[0.2em] text-[#d4a853]/40">
+                                    {{ $t("Summon any historical figure") }}
+                                </p>
+                            </div>
+                        </div>
+                    </button>
                 </div>
             </div>
         </section>
@@ -163,10 +243,17 @@ definePageMeta({
     layout: "seance",
 });
 
-const { t } = useI18n();
+const { t, locale, setLocale } = useI18n();
 const localePath = useLocalePath();
 const router = useRouter();
 const sessionStore = useSessionStore();
+
+// Hamburger menu
+const showMenu = ref(false);
+async function switchLang(lang: "en" | "es") {
+    await setLocale(lang as any);
+    showMenu.value = false;
+}
 
 useHead(() => ({
     title: t("DeadTalk - Talk to History"),
