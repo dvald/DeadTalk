@@ -28,6 +28,9 @@ export interface Persona {
     firstMessagesEs: string[];
     emotionalProfile: EmotionalTrigger[];
     avatar: string;
+    image: string;
+    quote: string;
+    quoteEs: string;
     searchKeywords: string[];
 }
 
@@ -41,6 +44,9 @@ export interface PersonaSummary {
     nationality: string;
     profession: string;
     avatar: string;
+    image: string;
+    quote: string;
+    quoteEs: string;
     firstMessage: string;
     firstMessageEs: string;
 }
@@ -160,6 +166,9 @@ ${SYSTEM_PROMPT_INSTRUCTIONS}`,
             { emotion: "pause", trigger: "Wardenclyffe, unfulfilled dreams" },
         ],
         avatar: "/images/personas/tesla.jpg",
+        image: "https://lh3.googleusercontent.com/aida-public/AB6AXuCfjbm1DU2EGnuA0SmkJrrBlgGcuTLGNepJliHb4i8T6zPjZT7xS7aUWI5gonnlXLhS8did-Wm6OkRgYlnwNjk_LdEQvbr9CYsxysx27a7OnFmm0UaHen00QLtf14Po9Xrh63ipHxx6nKyCrPNK25lKkB40EpknGi9YlDJA1e1HY4YwLSy0ltPTfq1fYJDV-A52qzp9fAHXCrK7T9i3f9x4Vgfp5br863N7G6LCZVtdtG1qPejUP9jS13a4iZZwCiZwqSd-9V-Pu8pG",
+        quote: "The present is theirs; the future, for which I really worked, is mine.",
+        quoteEs: "El presente es de ellos; el futuro, por el que realmente trabajé, es mío.",
         searchKeywords: ["electricity", "wireless", "edison", "alternating current", "inventor"],
     },
     {
@@ -255,6 +264,9 @@ ${SYSTEM_PROMPT_INSTRUCTIONS}`,
             { emotion: "whispers", trigger: "Failed marriages, personal regrets, son Eduard" },
         ],
         avatar: "/images/personas/einstein.jpg",
+        image: "https://lh3.googleusercontent.com/aida-public/AB6AXuD6Sg0caTpkA1Yz_yGd-bh2ri6EzC9_VMA4eA7qornPlfT1fcIngg96pVfc90Xxh4gNZNm3TFcwyueUvzCH5M1J_j7dxg80-mHR4gy0RRQtd1T6Sj6uzpR1GqHLlf639zJuXZNkgwNZAfZ5DCKwV_L4jpFkjQNXDTUnviaZcqTrdPWPHiXqQl23hGMxisj-_H1a9Pi42wTfI8w1AYH5O5YeSTFrflfTtMa-_W-bJEPmghjn7Fhq10VSdejjyxuqPkF3g9vJwSSt81_2",
+        quote: "Imagination is more important than knowledge. For knowledge is limited, whereas imagination embraces the entire world.",
+        quoteEs: "La imaginación es más importante que el conocimiento. Porque el conocimiento es limitado, mientras que la imaginación abarca el mundo entero.",
         searchKeywords: ["physics", "relativity", "quantum", "Nobel Prize", "pacifism"],
     },
     {
@@ -350,6 +362,9 @@ ${SYSTEM_PROMPT_INSTRUCTIONS}`,
             { emotion: "pause", trigger: "Langevin scandal, Academy rejection" },
         ],
         avatar: "/images/personas/curie.jpg",
+        image: "",
+        quote: "Nothing in life is to be feared, it is only to be understood.",
+        quoteEs: "Nada en la vida debe ser temido, solo debe ser comprendido.",
         searchKeywords: ["radioactivity", "radium", "polonium", "Nobel Prize", "women in science"],
     },
     {
@@ -446,6 +461,9 @@ ${SYSTEM_PROMPT_INSTRUCTIONS}`,
             { emotion: "pause", trigger: "End of dynasty, fall of Egypt, children's fates" },
         ],
         avatar: "/images/personas/cleopatra.jpg",
+        image: "https://lh3.googleusercontent.com/aida-public/AB6AXuBlKFbzesyN3MQW8yCX8b20xZZmWSlxVkyhxnARrmeFjFgmhqWUJfM_tKcaz5gDLCG96vNyhQ4n0jpN4Cd4VTEWtHXxMW7Y_Le-LtqdUcj232S5ISwZnTndgTYIxhfYw5HDMTXyuNtWuQ1njuhs1GYoNEzqFXUP4TeDxM0Hyvs2B__ORHl1AtS3LkAeBKa3xtlAUEcJeZZYfrlQOk5HZL6PwvjjN8NdarGMmIWedJ_UQBLJMZMh3H8ljGeqa_EP1ybHAB0I0Guf2-4r",
+        quote: "I will not be triumphed over.",
+        quoteEs: "No seré exhibida en triunfo.",
         searchKeywords: ["pharaoh", "Egypt", "Rome", "Antony", "Caesar", "Ptolemaic"],
     },
     {
@@ -543,6 +561,9 @@ ${SYSTEM_PROMPT_INSTRUCTIONS}`,
             { emotion: "pause", trigger: "Legacy, returning to Apple, making a dent" },
         ],
         avatar: "/images/personas/jobs.jpg",
+        image: "",
+        quote: "Stay hungry, stay foolish.",
+        quoteEs: "Sigue hambriento, sigue alocado.",
         searchKeywords: ["Apple", "iPhone", "design", "innovation", "Silicon Valley"],
     },
 ];
@@ -594,6 +615,9 @@ export class PersonasConfig {
                 nationality: p.nationality,
                 profession: p.profession,
                 avatar: p.avatar,
+                image: p.image,
+                quote: p.quote,
+                quoteEs: p.quoteEs,
                 firstMessage: p.firstMessages.length > 0
                     ? p.firstMessages[Math.floor(Math.random() * p.firstMessages.length)]
                     : p.firstMessage,

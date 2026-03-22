@@ -158,12 +158,18 @@ export class ConversationEngineService {
   public handleAudioChunk(sessionId: string, chunk: string): void {
     const session = this.sessions.get(sessionId);
     if (!session) {
+      Monitor.warning("ConversationEngineService: handleAudioChunk - no session", { sessionId });
       return;
     }
 
     try {
       const buffer = Buffer.from(chunk, "base64");
       session.audioChunks.push(buffer);
+      Monitor.info("ConversationEngineService: audio chunk received", {
+        sessionId,
+        chunkBytes: buffer.length,
+        totalChunks: session.audioChunks.length,
+      });
     } catch (err) {
       Monitor.warning("ConversationEngineService: invalid audio chunk", {
         sessionId,
@@ -177,13 +183,21 @@ export class ConversationEngineService {
    * @param sessionId The session ID
    */
   public async handleSpeechEnd(sessionId: string): Promise<void> {
+    Monitor.info("ConversationEngineService: speech-end received", {
+      sessionId,
+      hasSession: this.sessions.has(sessionId),
+      isProcessing: this.sessions.get(sessionId)?.isProcessing,
+      audioChunks: this.sessions.get(sessionId)?.audioChunks?.length,
+    });
+
     const session = this.sessions.get(sessionId);
     if (!session) {
+      Monitor.warning("ConversationEngineService: handleSpeechEnd - no session", { sessionId });
       return;
     }
 
     if (session.isProcessing) {
-      Monitor.debug(
+      Monitor.info(
         "ConversationEngineService: already processing, ignoring speech-end",
         { sessionId },
       );
@@ -191,7 +205,7 @@ export class ConversationEngineService {
     }
 
     if (session.audioChunks.length === 0) {
-      Monitor.debug(
+      Monitor.info(
         "ConversationEngineService: no audio chunks, ignoring speech-end",
         { sessionId },
       );
@@ -206,7 +220,7 @@ export class ConversationEngineService {
 
     try {
       // 1. Speech-to-Text (use session language for better recognition)
-      Monitor.debug("ConversationEngineService: STT", {
+      Monitor.info("ConversationEngineService: STT", {
         sessionId,
         audioBytes: audioBuffer.length,
         language: session.language,
@@ -217,16 +231,16 @@ export class ConversationEngineService {
       );
 
       if (!transcript || transcript.trim().length === 0) {
-        Monitor.debug("ConversationEngineService: empty transcript, skipping", {
+        Monitor.info("ConversationEngineService: empty transcript, skipping", {
           sessionId,
         });
         session.isProcessing = false;
         return;
       }
 
-      Monitor.info("ConversationEngineService: user said", {
+      Monitor.info("ConversationEngineService: user transcript received", {
         sessionId,
-        transcript,
+        transcriptLength: transcript.length,
       });
 
       // Emit user transcript to frontend

@@ -72,7 +72,13 @@ export class WebsocketController {
 
   public message(msg: string | Buffer | ArrayBuffer) {
     if (!msg) {
+      Monitor.debug("WS message: empty message received");
       return;
+    }
+    const msgType = msg instanceof Buffer ? "Buffer" : msg instanceof ArrayBuffer ? "ArrayBuffer" : typeof msg;
+    const msgLen = typeof msg === "string" ? msg.length : (msg as any).byteLength || (msg as any).length || 0;
+    if (msgLen > 100) {
+      Monitor.debug("WS message: type=" + msgType + " len=" + msgLen);
     }
     if (msg instanceof Buffer) {
       msg = msg.toString("utf8");
@@ -169,6 +175,7 @@ export class WebsocketController {
         }
         break;
       case "audio-chunk":
+        Monitor.info("WS: audio-chunk received", { sessionId: this.sessionId, hasChunk: !!msg.chunk, chunkLength: msg.chunk?.length });
         if (this.sessionId && msg.chunk) {
           ConversationEngineService.getInstance().handleAudioChunk(
             this.sessionId,
@@ -177,6 +184,7 @@ export class WebsocketController {
         }
         break;
       case "speech-end":
+        Monitor.info("WS: speech-end received", { sessionId: this.sessionId });
         if (this.sessionId) {
           ConversationEngineService.getInstance()
             .handleSpeechEnd(this.sessionId)

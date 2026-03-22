@@ -1,251 +1,221 @@
 <template>
-    <div class="seance-bg min-h-[100dvh] flex flex-col relative">
+    <div class="seance-bg min-h-[100dvh] flex flex-col relative overflow-hidden">
+        <!-- Atmospheric layers -->
+        <div class="grain-overlay" />
+        <div class="fog-gradient" />
+        <div class="ambient-orb ambient-orb--primary" />
+        <div class="ambient-orb ambient-orb--secondary" />
+
         <!-- Resume prompt overlay -->
         <div
             v-if="showResumePrompt"
             class="absolute inset-0 z-50 bg-black/80 flex items-center justify-center p-6"
         >
-            <div
-                class="max-w-sm w-full rounded-xl border border-[#d4a853]/30 bg-[#1a1520] p-6 flex flex-col gap-4 items-center text-center"
-            >
+            <div class="max-w-sm w-full rounded-sm glassmorphism p-6 flex flex-col gap-4 items-center text-center">
                 <Icon
                     name="mdi:message-reply-text"
                     class="w-10 h-10 text-[#d4a853]"
                 />
-                <Heading
-                    :title="$t('Resume conversation?')"
-                    :size="HeadingSize.SM"
-                />
-                <p class="text-sm text-text-neutral-subtle">{{ $t("You have a previous conversation with") }} {{ personaName }}.</p>
+                <h3 class="heading-font italic text-xl text-[#e4e1e9]">
+                    {{ $t("Resume conversation?") }}
+                </h3>
+                <p class="text-sm text-[#e4e1e9]/50">{{ $t("You have a previous conversation with") }} {{ personaName }}.</p>
                 <div class="flex gap-3">
-                    <Button
-                        :text="$t('Start fresh')"
-                        :color="ColorAccent.NEUTRAL"
+                    <button
+                        class="px-4 py-2 rounded-sm text-sm font-medium text-[#e4e1e9]/60 hover:bg-[#39383e] transition-all duration-500"
                         @click="onResumeChoice(false)"
-                    />
-                    <Button
-                        :text="$t('Resume')"
-                        :color="ColorAccent.PRIMARY_BRAND"
+                    >
+                        {{ $t("Start fresh") }}
+                    </button>
+                    <button
+                        class="px-4 py-2 rounded-sm text-sm font-medium bg-gradient-to-tr from-[#f2c36b] to-[#d4a853] text-[#131318] shadow-[0_0_15px_rgba(242,195,107,0.3)] transition-all duration-500"
                         @click="onResumeChoice(true)"
-                    />
+                    >
+                        {{ $t("Resume") }}
+                    </button>
                 </div>
             </div>
         </div>
 
-        <!-- TOP: Persona info -->
-        <div class="p-4 flex-none flex items-center gap-3">
-            <div
-                class="w-12 h-12 rounded-full bg-background-neutral-subtle flex items-center justify-center text-lg font-bold text-text-neutral-subtle shrink-0"
+        <!-- Sources button overlay (sits on top of SeanceHeader's book icon) -->
+        <button
+            class="fixed top-8 right-6 z-[61] text-[#e4e1e9]/40 hover:text-[#d4a853] transition-all duration-500"
+            @click="showSourcesDrawer = !showSourcesDrawer"
+        >
+            <svg
+                class="w-6 h-6"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.5"
             >
-                {{ personaInitial }}
-            </div>
-            <div class="min-w-0">
-                <Heading
-                    :title="personaName"
-                    :size="HeadingSize.XS"
-                    class="line-clamp-1"
-                />
-                <p class="text-xs text-text-neutral-subtle">
-                    {{ personaSubtitle }}
+                <path d="M4 19.5v-15A2.5 2.5 0 016.5 2H20v20H6.5a2.5 2.5 0 010-5H20" />
+            </svg>
+        </button>
+
+        <!-- Main content: centered persona portal -->
+        <main class="flex-1 flex flex-col items-center justify-center px-6 pt-24 pb-36 relative z-10">
+            <!-- Persona name -->
+            <section class="w-full text-center mb-4">
+                <div class="inline-block relative">
+                    <div class="absolute -inset-4 bg-[#f2c36b]/5 blur-3xl rounded-full" />
+                    <h2 class="heading-font text-4xl md:text-5xl italic tracking-tight text-[#e4e1e9] seance-text-glow">
+                        {{ personaName }}
+                    </h2>
+                    <p class="font-label text-[10px] uppercase tracking-[0.2em] text-[#cec1e2]/60 mt-2">
+                        {{ personaSubtitle }}
+                    </p>
+                </div>
+            </section>
+
+            <!-- Portrait with ectoplasm waves -->
+            <SessionPortrait
+                :personaName="personaName"
+                :personaImage="personaImage"
+                :isActive="isAgentSpeaking"
+                :emotionColor="currentEmotionColor"
+                :emotionIntensity="currentEmotionIntensity"
+                :frequencyDataFn="getFrequencyData"
+                class="mb-4"
+            />
+
+            <!-- Live transcript / static quote zone -->
+            <div class="w-full max-w-sm max-h-[30vh] overflow-y-auto scrollbar-hide">
+                <p
+                    v-if="agentTranscriptClean"
+                    class="heading-font italic text-lg leading-relaxed text-[#e4e1e9]/80 text-center"
+                >
+                    {{ agentTranscriptClean }}
+                </p>
+                <p
+                    v-else-if="userTranscript"
+                    class="font-body text-sm leading-relaxed text-[#e4e1e9]/50 text-center"
+                >
+                    {{ userTranscript }}
+                </p>
+                <p
+                    v-else-if="personaQuote"
+                    class="heading-font italic text-lg leading-relaxed text-[#e4e1e9]/50 text-center"
+                >
+                    &ldquo;{{ personaQuote }}&rdquo;
                 </p>
             </div>
-        </div>
+        </main>
 
-        <!-- Audio wave player (with emotion-colored aura glow) -->
-        <div
-            v-if="agents.length > 0"
-            class="px-4 pb-2 flex-none rounded-lg transition-all duration-500"
-            :style="
-                isAgentSpeaking
-                    ? {
-                          backgroundColor: currentEmotionColor + '0d',
-                          boxShadow: `0 0 20px ${currentEmotionColor}15, 0 0 40px ${currentEmotionColor}05`,
-                          outline: `1px solid ${currentEmotionColor}4d`,
-                      }
-                    : {}
-            "
+        <!-- Sources overlay (from top, notification_open style) -->
+        <Transition
+            enter-active-class="transition-all duration-500"
+            leave-active-class="transition-all duration-500"
+            enter-from-class="opacity-0"
+            leave-to-class="opacity-0"
         >
-            <AudioWavePlayer
-                :agentName="agents[0]?.name || ''"
-                :agentAvatar="agents[0]?.avatar || ''"
-                :isActive="isAgentSpeaking"
-                :audioTag="wsAgentStates.get(agents[0]?.id)?.audioTag ?? ''"
-                :frequencyDataFn="getFrequencyData"
-            />
-        </div>
-
-        <!-- Transcripts -->
-        <div class="px-4 py-2 flex-none flex flex-col gap-1 max-h-32 overflow-y-auto">
-            <p
-                v-if="userTranscript"
-                class="text-xs text-text-neutral-subtle italic"
+            <div
+                v-if="showSourcesDrawer"
+                class="fixed inset-0 z-[45] bg-[#131318]/80 backdrop-blur-sm"
+                @click.self="showSourcesDrawer = false"
             >
-                {{ $t("You:") }} {{ userTranscript }}
-            </p>
-            <p
-                v-if="agentTranscript"
-                class="text-xs text-text-default"
-            >
-                {{ personaName }}: {{ agentTranscriptClean }}
-            </p>
-        </div>
+                <div class="relative z-10 pt-20 pb-8 px-6 flex flex-col items-center max-w-2xl mx-auto max-h-full overflow-y-auto">
+                    <!-- Persona name echo -->
+                    <section class="w-full text-center mb-8">
+                        <div class="inline-block relative">
+                            <div class="absolute -inset-4 bg-[#f2c36b]/5 blur-3xl rounded-full" />
+                            <h2 class="heading-font text-3xl italic tracking-tight text-[#e4e1e9] mb-1">
+                                {{ personaName }}
+                            </h2>
+                            <p class="font-label text-[10px] uppercase tracking-[0.2em] text-[#cec1e2]/60">
+                                {{ personaSubtitle }}
+                            </p>
+                        </div>
+                    </section>
 
-        <!-- Controls bar (above sources so buttons stay accessible) -->
-        <div class="flex-none border-y seance-divider px-4 py-3 flex items-center justify-between gap-3">
-            <!-- Status -->
-            <div class="flex items-center gap-2 min-w-0">
-                <Badge
-                    v-if="status === 'connecting'"
-                    :text="$t('Connecting...')"
-                    :color="ColorAccent.NEUTRAL"
-                />
-                <Badge
-                    v-else-if="status === 'active' && isSpeaking"
-                    :text="$t('Listening...')"
-                    :color="ColorAccent.WARNING"
-                />
-                <Badge
-                    v-else-if="status === 'active' && isAgentSpeaking"
-                    :text="$t('Speaking...')"
-                    :color="ColorAccent.SUCCESS"
-                />
-                <Badge
-                    v-else-if="status === 'active'"
-                    :text="$t('Ready')"
-                    :color="ColorAccent.SUCCESS"
-                />
-                <Badge
-                    v-else
-                    :text="$t('Session ended')"
-                    :color="ColorAccent.NEUTRAL"
-                />
-            </div>
+                    <!-- Section header -->
+                    <section class="w-full mb-6">
+                        <div class="flex items-center justify-between px-2">
+                            <h3 class="heading-font text-xl italic text-[#f2c36b]">
+                                {{ $t("Archival References") }}
+                            </h3>
+                            <span class="text-[10px] font-label uppercase tracking-widest text-[#d2c5b2]/60">
+                                {{ sources.length }} {{ $t("Sources Found") }}
+                            </span>
+                        </div>
+                    </section>
 
-            <!-- Export transcript -->
-            <button
-                v-if="canExport"
-                class="w-10 h-10 rounded-full flex items-center justify-center bg-background-neutral-subtle hover:bg-background-neutral-hover transition-colors"
-                :title="$t('Export transcript')"
-                @click="downloadTranscript"
-            >
-                <Icon
-                    name="mdi:download"
-                    class="w-5 h-5 text-text-neutral-subtle"
-                />
-            </button>
+                    <!-- Source cards (glass-artifact + gilded-border style) -->
+                    <section class="w-full space-y-6 relative">
+                        <div
+                            v-for="(source, idx) in sourcesReversed"
+                            :key="source.id"
+                            class="p-6 shadow-2xl transition-all duration-500 hover:-translate-y-1 rounded-sm"
+                            :class="[
+                                'bg-[#2a292f]/60 backdrop-blur-2xl border border-[#d4a853]/20',
+                                idx === 0 ? 'opacity-100' : idx === 1 ? 'opacity-80 hover:opacity-100' : 'opacity-60 hover:opacity-100',
+                            ]"
+                        >
+                            <div class="flex justify-between items-start mb-4">
+                                <h4 class="heading-font text-lg italic text-[#e4e1e9]">
+                                    {{ source.title || getSourceDomain(source.url) }}
+                                </h4>
+                                <Icon
+                                    name="mdi:book-open-page-variant"
+                                    class="w-4 h-4 text-[#d4a853] shrink-0"
+                                />
+                            </div>
+                            <p
+                                v-if="source.snippet"
+                                class="text-sm text-[#d2c5b2] leading-relaxed mb-4 italic line-clamp-3"
+                            >
+                                {{ source.snippet }}
+                            </p>
+                            <div class="flex justify-between items-center pt-4 border-t border-[#4e4637]/10">
+                                <span class="text-[9px] font-label uppercase tracking-widest text-[#d4a853]/60">
+                                    {{ $t("Summoned from") }}: {{ getSourceDomain(source.url) }}
+                                </span>
+                                <span class="text-[9px] font-label uppercase text-[#d2c5b2]/40">
+                                    {{ $t("Verified Artifact") }}
+                                </span>
+                            </div>
+                        </div>
+                    </section>
 
-            <!-- Controls: Mode toggle + Mic + End button -->
-            <div class="flex items-center gap-2">
-                <!-- Mode toggle (auto / push-to-talk) -->
-                <button
-                    v-if="status === 'active' || status === 'connecting'"
-                    class="h-8 px-2 rounded-md text-xs font-medium border transition-colors duration-150 flex items-center gap-1"
-                    :class="
-                        micMode === 'auto'
-                            ? 'border-border-default bg-background-neutral-subtle text-text-neutral-subtle'
-                            : 'border-background-primary-brand-default bg-background-primary-brand-default/10 text-text-primary-brand'
-                    "
-                    :disabled="status === 'connecting'"
-                    @click="sessionStore.toggleMicMode()"
-                >
-                    <Icon
-                        :name="micMode === 'auto' ? 'mdi:microphone' : 'mdi:gesture-tap-hold'"
-                        class="w-3.5 h-3.5"
-                    />
-                    {{ micMode === "auto" ? $t("Auto") : $t("Push") }}
-                </button>
-
-                <!-- Auto mode: Mic indicator (VAD-driven) -->
-                <div
-                    v-if="(status === 'active' || status === 'connecting') && micMode === 'auto'"
-                    class="w-10 h-10 rounded-full flex items-center justify-center transition-all duration-200"
-                    :class="isSpeaking ? 'bg-red-500 animate-pulse ring-4 ring-red-500/30 scale-110' : 'bg-background-neutral-subtle'"
-                >
-                    <Icon
-                        name="mdi:microphone"
-                        class="w-5 h-5"
-                        :class="isSpeaking ? 'text-white' : 'text-text-neutral-subtle'"
-                    />
+                    <!-- Loading indicator -->
+                    <section
+                        v-if="status === 'active'"
+                        class="w-full text-center mt-8"
+                    >
+                        <p class="text-[#e4e1e9]/40 text-[11px] italic animate-pulse">
+                            {{ $t("Ethereal connection stable... distilling further archival fragments...") }}
+                        </p>
+                    </section>
                 </div>
-
-                <!-- Manual mode: Push-to-talk button -->
-                <div
-                    v-if="(status === 'active' || status === 'connecting') && micMode === 'manual'"
-                    class="w-12 h-12 rounded-full flex items-center justify-center cursor-pointer select-none transition-all duration-150"
-                    :class="
-                        isSpeaking
-                            ? 'bg-red-500 scale-110 ring-4 ring-red-500/40 animate-pulse'
-                            : 'bg-background-primary-brand-default hover:bg-background-primary-brand-hover active:scale-95'
-                    "
-                    @pointerdown.prevent="onPushStart"
-                    @pointerup.prevent="onPushEnd"
-                    @pointerleave="onPushEnd"
-                >
-                    <Icon
-                        name="mdi:microphone"
-                        class="w-6 h-6 text-white"
-                    />
-                </div>
-
-                <!-- Interrupt agent (stop speaking) -->
-                <button
-                    v-if="isAgentSpeaking"
-                    class="w-10 h-10 rounded-full flex items-center justify-center transition-all duration-150 bg-background-neutral-subtle hover:bg-[#d4a853]/20 active:scale-95"
-                    :title="$t('Interrupt')"
-                    @click="onInterrupt"
-                >
-                    <Icon
-                        name="mdi:hand-back-left"
-                        class="w-5 h-5 text-[#d4a853]"
-                    />
-                </button>
-
-                <button
-                    v-if="status !== 'ended'"
-                    class="h-10 px-3 rounded-md border border-red-500/40 bg-red-500/15 text-red-200 text-sm font-medium transition-colors duration-150 hover:bg-red-500/25 disabled:opacity-50"
-                    :disabled="status === 'connecting'"
-                    @click="onStop"
-                >
-                    {{ $t("End") }}
-                </button>
-                <button
-                    v-else
-                    class="h-10 px-3 rounded-md border border-border-default bg-background-neutral-subtle text-text-default text-sm font-medium transition-colors duration-150 hover:bg-background-neutral-hover"
-                    @click="onBack"
-                >
-                    {{ $t("Back") }}
-                </button>
             </div>
-        </div>
+        </Transition>
 
-        <!-- Share buttons (end-of-session) -->
-        <div
-            v-if="status === 'ended'"
-            class="flex-none px-4 py-3 flex flex-col items-center gap-2"
-        >
-            <p class="text-xs text-text-neutral-subtle">
-                {{ $t("Share your conversation") }}
-            </p>
-            <SessionShareButtons
-                :personaName="personaName"
-                :personaEra="persona?.era || ''"
-            />
-        </div>
+        <!-- End-of-session overlay -->
+        <SessionEndedOverlay
+            :visible="status === 'ended'"
+            :personaName="personaName"
+            :personaImage="personaImage"
+            :personaEra="persona?.era || ''"
+            :conversationHistory="sessionStore.conversationHistory"
+            :elapsedTime="sessionStore.elapsedTime"
+            :sourcesCount="sources.length"
+        />
 
-        <!-- Sources feed (scrollable, below controls) -->
-        <div class="flex-1 overflow-y-auto px-4 py-2 flex flex-col gap-3">
-            <p
-                v-if="sourcesReversed.length === 0 && status === 'active'"
-                class="text-sm text-text-neutral-subtle text-center py-8"
-            >
-                {{ $t("Sources will appear here when the agent cites them...") }}
-            </p>
-            <SourceCardItem
-                v-for="source in sourcesReversed"
-                :key="source.id"
-                :source="source"
-            />
-        </div>
+        <!-- Floating controls bar -->
+        <SessionControls
+            :status="status"
+            :micMode="micMode"
+            :isSpeaking="isSpeaking"
+            :isAgentSpeaking="isAgentSpeaking"
+            :canExport="canExport"
+            @toggle-mic-mode="sessionStore.toggleMicMode()"
+            @push-start="onPushStart"
+            @push-end="onPushEnd"
+            @interrupt="onInterrupt"
+            @stop="onStop"
+            @back="onBack"
+            @export="downloadTranscript"
+        />
     </div>
 </template>
 
@@ -253,12 +223,12 @@
 import type { PersistedSession } from "~/composables/useSessionPersistence";
 
 definePageMeta({
-    layout: "landing",
+    layout: "seance",
 });
 
 const route = useRoute();
 const router = useRouter();
-const { t: _t, locale } = useI18n();
+const { t: $t, locale } = useI18n();
 const localePath = useLocalePath();
 
 // Store
@@ -275,6 +245,17 @@ const showResumePrompt = ref(false);
 const savedSessionData = ref<PersistedSession | null>(null);
 const isResuming = ref(false);
 
+// Sources overlay
+const showSourcesDrawer = ref(false);
+
+function getSourceDomain(url: string): string {
+    try {
+        return new URL(url).hostname.replace("www.", "");
+    } catch {
+        return url;
+    }
+}
+
 // Persona from query string
 const personaIdFromUrl = computed(() => {
     const raw = route.query.persona;
@@ -282,10 +263,20 @@ const personaIdFromUrl = computed(() => {
 });
 
 const personaName = computed(() => persona.value?.name || personaIdFromUrl.value || "Unknown");
-const personaInitial = computed(() => personaName.value.charAt(0));
 const personaSubtitle = computed(() => {
-    if (persona.value) return persona.value.era + " · " + persona.value.profession;
-    return "";
+    if (!persona.value) return "";
+    const parts: string[] = [];
+    if (persona.value.profession) parts.push(persona.value.profession);
+    if (persona.value.era) parts.push(persona.value.era);
+    return parts.join(" \u2022 ");
+});
+const personaImage = computed(() => persona.value?.image || persona.value?.avatar || "");
+const personaQuote = computed(() => {
+    if (!persona.value) return "";
+    if (locale.value === "es" && persona.value.quoteEs) {
+        return persona.value.quoteEs;
+    }
+    return persona.value.quote || "";
 });
 const agentTranscriptClean = computed(() => {
     return agentTranscript.value
@@ -337,22 +328,43 @@ const isAgentSpeaking = computed(() => {
 });
 
 // Emotion color for aura glow on the container
+// Emotion colors: warm gold base with STRONG tints for intense emotions
+// Angry/serious push toward red, sad/melancholy toward cool amber, excited toward bright yellow
 const EMOTION_COLORS: Record<string, string> = {
-    angry: "#ef4444",
-    excited: "#f5d78e",
-    whispers: "#9689a3",
-    melancholy: "#79d2ff",
-    pause: "#332f38",
-    sad: "#79d2ff",
-    surprised: "#f5d78e",
-    thoughtful: "#9689a3",
-    laughing: "#f5d78e",
-    serious: "#9e9490",
+    angry: "#d94a2b", // fiery red-orange — unmistakable anger
+    excited: "#f5c842", // vivid yellow-gold — high energy
+    whispers: "#9a8a6a", // dim warm grey — hushed, intimate
+    melancholy: "#7a6a4a", // deep muted brown — heavy, somber
+    pause: "#6b6040", // dark olive-bronze — dormant, still
+    sad: "#6a7a8a", // steel blue-grey — cold sadness
+    surprised: "#f0e060", // bright lemon flash — startled
+    thoughtful: "#8aaa9a", // sage green-grey — calm contemplation
+    laughing: "#f2c36b", // warm gold — joyful (primary brand color)
+    serious: "#c05a3a", // deep red-amber — stern, intense
 };
 const currentEmotionColor = computed(() => {
     const tag = agents.value[0]?.id ? wsAgentStates.value.get(agents.value[0].id)?.audioTag : "";
     if (!tag) return "#d4a853";
     return EMOTION_COLORS[tag.toLowerCase()] || "#d4a853";
+});
+
+// Intensity multiplier: intense emotions get bigger, brighter blobs
+const EMOTION_INTENSITY: Record<string, number> = {
+    angry: 1.8, // fire up the glow
+    excited: 1.5,
+    surprised: 1.4,
+    serious: 1.5,
+    laughing: 1.3,
+    whispers: 0.6, // dim down
+    pause: 0.4,
+    melancholy: 0.7,
+    sad: 0.7,
+    thoughtful: 0.8,
+};
+const currentEmotionIntensity = computed(() => {
+    const tag = agents.value[0]?.id ? wsAgentStates.value.get(agents.value[0].id)?.audioTag : "";
+    if (!tag) return 1.0;
+    return EMOTION_INTENSITY[tag.toLowerCase()] || 1.0;
 });
 
 // Initialize session (optionally with resumed data)
@@ -557,10 +569,23 @@ function onBack() {
 
 // Push-to-talk handlers
 function onPushStart() {
-    startManualRecording();
+    console.log("[SESSION] onPushStart called, micMode:", micMode.value, "isListening:", _isListening.value);
+    console.log("[SESSION] startManualRecording is:", typeof startManualRecording);
+    try {
+        startManualRecording();
+        console.log("[SESSION] startManualRecording returned OK");
+    } catch (err) {
+        console.error("[SESSION] startManualRecording THREW:", err);
+    }
 }
 
 function onPushEnd() {
-    stopManualRecording();
+    console.log("[SESSION] onPushEnd called");
+    try {
+        stopManualRecording();
+        console.log("[SESSION] stopManualRecording returned OK");
+    } catch (err) {
+        console.error("[SESSION] stopManualRecording THREW:", err);
+    }
 }
 </script>
