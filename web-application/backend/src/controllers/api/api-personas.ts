@@ -6,6 +6,7 @@ import Express from "express";
 import { noCache, NOT_FOUND, sendApiError, sendApiResult } from "../../utils/http-utils";
 import { Controller } from "../controller";
 import { PersonasConfig } from "../../config/personas";
+import { CharacterCreationService } from "../../services/character-creation-service";
 
 /**
  * @typedef PersonaSummary
@@ -69,8 +70,24 @@ export class PersonasController extends Controller {
      * @returns {Array.<PersonaSummary>} 200 - List of personas
      */
     public async listPersonas(request: Express.Request, response: Express.Response) {
-        const personas = PersonasConfig.getInstance().listPersonas();
-        sendApiResult(request, response, personas);
+        const builtIn = PersonasConfig.getInstance().listPersonas();
+
+        // Append custom characters created via /characters/create
+        const custom = (await CharacterCreationService.getInstance().listCustomPersonas()).map(p => ({
+            id: p.id,
+            name: p.name,
+            era: p.era,
+            nationality: p.nationality,
+            profession: p.profession,
+            avatar: p.avatar || "",
+            image: p.image,
+            quote: p.quote,
+            quoteEs: p.quoteEs,
+            firstMessage: p.firstMessage,
+            firstMessageEs: p.firstMessageEs,
+        }));
+
+        sendApiResult(request, response, [...builtIn, ...custom]);
     }
 
     /**
@@ -86,26 +103,47 @@ export class PersonasController extends Controller {
         const id = request.params.id || "";
         const persona = PersonasConfig.getInstance().getPersonaById(id);
 
-        if (!persona) {
-            sendApiError(request, response, NOT_FOUND, "PERSONA_NOT_FOUND", "Persona not found: " + id);
+        if (persona) {
+            // Return public fields only (no system prompt)
+            sendApiResult(request, response, {
+                id: persona.id,
+                name: persona.name,
+                era: persona.era,
+                nationality: persona.nationality,
+                profession: persona.profession,
+                avatar: persona.avatar,
+                image: persona.image,
+                quote: persona.quote,
+                quoteEs: persona.quoteEs,
+                firstMessage: persona.firstMessage,
+                firstMessageEs: persona.firstMessageEs,
+                emotionalProfile: persona.emotionalProfile,
+                searchKeywords: persona.searchKeywords,
+            });
             return;
         }
 
-        // Return public fields only (no system prompt)
-        sendApiResult(request, response, {
-            id: persona.id,
-            name: persona.name,
-            era: persona.era,
-            nationality: persona.nationality,
-            profession: persona.profession,
-            avatar: persona.avatar,
-            image: persona.image,
-            quote: persona.quote,
-            quoteEs: persona.quoteEs,
-            firstMessage: persona.firstMessage,
-            firstMessageEs: persona.firstMessageEs,
-            emotionalProfile: persona.emotionalProfile,
-            searchKeywords: persona.searchKeywords,
-        });
+        // Check custom characters
+        const custom = await CharacterCreationService.getInstance().getCustomPersona(id);
+        if (custom) {
+            sendApiResult(request, response, {
+                id: custom.id,
+                name: custom.name,
+                era: custom.era,
+                nationality: custom.nationality,
+                profession: custom.profession,
+                avatar: custom.avatar || "",
+                image: custom.image,
+                quote: custom.quote,
+                quoteEs: custom.quoteEs,
+                firstMessage: custom.firstMessage,
+                firstMessageEs: custom.firstMessageEs,
+                emotionalProfile: custom.emotionalProfile,
+                searchKeywords: custom.searchKeywords,
+            });
+            return;
+        }
+
+        sendApiError(request, response, NOT_FOUND, "PERSONA_NOT_FOUND", "Persona not found: " + id);
     }
 }

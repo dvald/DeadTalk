@@ -1,5 +1,5 @@
-import type { Agent, SessionStatus, SessionMode, MicMode, ConversationEntry } from "~/models/session";
-import type { PersonaSummary } from "~/api/definitions";
+import type { Agent, SessionStatus, SessionMode, MicMode } from "~/models/session";
+import type { PersonaSummary, ConversationEntry } from "~/api/definitions";
 import type { SourceCard } from "~/models/source-card";
 
 export const useSessionStore = defineStore("session", () => {

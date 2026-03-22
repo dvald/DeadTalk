@@ -56,7 +56,6 @@ export function useOrchestratorSocket() {
     const sessionEndReason = ref<string>("");
     const userTranscriptText = ref<string>("");
     const agentErrorMessage = ref<string>("");
-
     // Parse incoming messages
     watch(data, (raw) => {
         if (!raw) return;

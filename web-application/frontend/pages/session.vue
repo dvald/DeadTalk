@@ -68,6 +68,13 @@
                 </div>
             </section>
 
+            <!-- Per-persona background effect (canvas behind portrait) -->
+            <BackgroundEffect
+                :personaId="personaIdFromUrl"
+                :isActive="isAgentSpeaking"
+                :emotionColor="currentEmotionColor"
+            />
+
             <!-- Portrait with ectoplasm waves -->
             <SessionPortrait
                 :personaName="personaName"

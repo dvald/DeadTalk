@@ -16,8 +16,4 @@ export type SessionStatus = "idle" | "connecting" | "active" | "ended";
 export type SessionMode = "debate" | "conversation";
 export type MicMode = "auto" | "manual";
 
-export interface ConversationEntry {
-    role: "user" | "agent";
-    text: string;
-    timestamp: number;
-}
+// ConversationEntry is defined in auto-generated api/definitions.ts — import from there

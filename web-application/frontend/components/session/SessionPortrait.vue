@@ -31,11 +31,12 @@
             />
         </div>
 
-        <!-- Portrait image or initial fallback -->
+        <!-- Portrait image: lip-sync frame > static photo > initial fallback -->
         <div
             class="relative z-10 w-48 h-48 rounded-sm overflow-hidden seance-glow group"
             :class="{ 'seance-glow-strong': isActive }"
         >
+            <!-- Portrait image -->
             <img
                 v-if="personaImage && !imageError"
                 :src="personaImage"

@@ -1,7 +1,6 @@
 "use strict";
 
-import type { PersonaSummary } from "~/api/definitions";
-import type { ConversationEntry } from "~/models/session";
+import type { PersonaSummary, ConversationEntry } from "~/api/definitions";
 import type { SourceCard } from "~/models/source-card";
 
 export interface PersistedSession {
