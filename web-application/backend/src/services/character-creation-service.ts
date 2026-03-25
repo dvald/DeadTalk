@@ -141,17 +141,28 @@ export class CharacterCreationService {
             );
 
             if (voiceResult.type === "real" && voiceResult.audioUrl) {
-                Monitor.info("CharacterCreationService: found real audio, attempting IVC clone", {
-                    name,
-                    audioUrl: voiceResult.audioUrl,
-                });
-                const audioBuffer = await VoiceDiscoveryService.getInstance().downloadAudio(voiceResult.audioUrl);
-                if (audioBuffer && audioBuffer.length > 10000) {
-                    voiceId = await ElevenLabsService.getInstance().cloneVoice(name, audioBuffer);
-                    voiceSource = "cloned";
-                    Monitor.info("CharacterCreationService: voice cloned from real audio", { name, voiceId });
-                } else {
-                    Monitor.warning("CharacterCreationService: audio download failed or too small, falling back to Voice Design", { name });
+                try {
+                    Monitor.info("CharacterCreationService: found real audio, attempting IVC clone", {
+                        name,
+                        audioUrl: voiceResult.audioUrl,
+                    });
+                    const audioBuffer = await VoiceDiscoveryService.getInstance().downloadAudio(voiceResult.audioUrl);
+                    if (audioBuffer && audioBuffer.length > 10000) {
+                        voiceId = await ElevenLabsService.getInstance().cloneVoice(name, audioBuffer);
+                        voiceSource = "cloned";
+                        Monitor.info("CharacterCreationService: voice cloned from real audio", { name, voiceId });
+                    } else {
+                        Monitor.warning("CharacterCreationService: audio too small or download failed", {
+                            name,
+                            bytes: audioBuffer?.length || 0,
+                        });
+                    }
+                } catch (cloneErr) {
+                    Monitor.warning("CharacterCreationService: IVC clone failed, falling back to Voice Design", {
+                        name,
+                        error: (cloneErr as Error).message,
+                    });
+                    // voiceId stays empty → falls through to designVoice below
                 }
             }
 
@@ -167,8 +178,14 @@ export class CharacterCreationService {
             Monitor.warning("CharacterCreationService: voice creation failed, using default", {
                 name,
                 error: (err as Error).message,
+                stack: (err as Error).stack?.substring(0, 300),
             });
-            voiceId = "JBFqnCBsd6RMkjVDRZzb"; // Default voice (George)
+            // Pick a gender-appropriate default voice based on research
+            const isFemale = research.voiceDescription?.toLowerCase().match(/\b(female|woman|feminine|her voice|she)\b/);
+            voiceId = isFemale
+                ? "EXAVITQu4vr4xnSDxMaL" // Default female voice (Sarah)
+                : "JBFqnCBsd6RMkjVDRZzb"; // Default male voice (George)
+            Monitor.info("CharacterCreationService: using gender-appropriate default", { isFemale: !!isFemale, voiceId });
         }
 
         // 4. Build persona

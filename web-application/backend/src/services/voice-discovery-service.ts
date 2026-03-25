@@ -102,7 +102,15 @@ export class VoiceDiscoveryService {
             Monitor.warning("VoiceDiscoveryService: general audio search failed", { error: (err as Error).message });
         }
 
-        for (const candidate of audioUrls) {
+        const MAX_URL_ATTEMPTS = 15;
+        const attemptsToTry = audioUrls.slice(0, MAX_URL_ATTEMPTS);
+        Monitor.info("VoiceDiscoveryService: validating audio URLs", {
+            name,
+            total: audioUrls.length,
+            trying: attemptsToTry.length,
+        });
+
+        for (const candidate of attemptsToTry) {
             const isValid = await this.validateAudioUrl(candidate.url);
             if (isValid) {
                 Monitor.info("VoiceDiscoveryService: found real audio", {

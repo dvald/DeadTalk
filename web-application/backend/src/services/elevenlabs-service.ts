@@ -457,7 +457,8 @@ export class ElevenLabsService {
                     if (response.statusCode !== 200) {
                         Monitor.warning("ElevenLabsService.cloneVoice API error", {
                             statusCode: response.statusCode,
-                            error: responseData.substring(0, 200),
+                            error: responseData.substring(0, 500),
+                            audioBytes: audioBuffer.length,
                         });
                         return reject(Object.assign(
                             new Error("Voice Clone failed (status " + response.statusCode + ")"),
