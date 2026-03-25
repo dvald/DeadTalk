@@ -66,7 +66,7 @@
         <!-- Hero Section -->
         <section class="relative min-h-[100dvh] flex flex-col items-center justify-center px-6 text-center overflow-hidden">
             <!-- Fog layers -->
-            <div class="fog-container">
+            <div class="fog-container pointer-events-none">
                 <div class="fog-layer opacity-40" />
                 <div
                     class="fog-layer opacity-30"
@@ -100,7 +100,7 @@
                 <div class="pt-10 flex flex-col items-center gap-8">
                     <button
                         class="group relative px-12 py-5 bg-[#d4a853] text-[#271900] uppercase tracking-[0.3em] text-[10px] rounded-sm shadow-[0_0_30px_rgba(242,195,107,0.2)] transition-all duration-700 hover:scale-105 hover:shadow-[0_0_50px_rgba(242,195,107,0.4)] overflow-hidden"
-                        @click="scrollToGrid"
+                        @click="router.push(localePath('/create-character'))"
                     >
                         <span class="relative z-10">{{ $t("Begin the Séance") }}</span>
                         <div
@@ -121,7 +121,7 @@
             </div>
 
             <!-- Bottom gradient fade -->
-            <div class="absolute bottom-0 left-0 w-full h-64 bg-gradient-to-t from-[#0a0a0c] to-transparent z-10" />
+            <div class="absolute bottom-0 left-0 w-full h-64 bg-gradient-to-t from-[#0a0a0c] to-transparent z-10 pointer-events-none" />
         </section>
 
         <!-- Persona Grid Section -->
