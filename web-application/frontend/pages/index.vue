@@ -293,11 +293,6 @@ function getCardOffsetClass(index: number): string {
     return "";
 }
 
-// Scroll to persona grid
-function scrollToGrid() {
-    personaGridRef.value?.scrollIntoView({ behavior: "smooth" });
-}
-
 // Fetch personas from API
 const personas = ref<PersonaSummary[]>([]);
 const isLoading = ref(true);
