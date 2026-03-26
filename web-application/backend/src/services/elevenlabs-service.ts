@@ -222,6 +222,105 @@ export class ElevenLabsService {
     }
 
     /**
+     * Transcribes audio to text using ElevenLabs Speech-to-Text API.
+     * Sends audio as multipart form-data to POST /v1/speech-to-text.
+     * @param audioBuffer Buffer containing the audio data (PCM, WAV, MP3, etc.)
+     * @param language Optional language code (e.g., "en"). Auto-detected if omitted.
+     * @returns The transcription text
+     */
+    public async speechToText(audioBuffer: Buffer, language?: string): Promise<string> {
+        const url = this.baseUrl + "/speech-to-text";
+
+        Monitor.debug("ElevenLabsService.speechToText", { audioBytes: audioBuffer.length, language: language || "auto" });
+
+        return new Promise<string>((resolve, reject) => {
+            // Build multipart form-data manually (no extra dependency)
+            const boundary = "----ElevenLabsSTT" + Date.now();
+            const parts: Buffer[] = [];
+
+            // Audio file part
+            parts.push(Buffer.from(
+                "--" + boundary + "\r\n" +
+                "Content-Disposition: form-data; name=\"file\"; filename=\"audio.wav\"\r\n" +
+                "Content-Type: audio/wav\r\n\r\n"
+            ));
+            parts.push(audioBuffer);
+            parts.push(Buffer.from("\r\n"));
+
+            // Model part
+            parts.push(Buffer.from(
+                "--" + boundary + "\r\n" +
+                "Content-Disposition: form-data; name=\"model_id\"\r\n\r\n" +
+                "scribe_v1\r\n"
+            ));
+
+            // Language part (optional)
+            if (language) {
+                parts.push(Buffer.from(
+                    "--" + boundary + "\r\n" +
+                    "Content-Disposition: form-data; name=\"language_code\"\r\n\r\n" +
+                    language + "\r\n"
+                ));
+            }
+
+            // Closing boundary
+            parts.push(Buffer.from("--" + boundary + "--\r\n"));
+
+            const body = Buffer.concat(parts);
+
+            const parsedUrl = new URL(url);
+
+            const req = HTTPS.request({
+                hostname: parsedUrl.hostname,
+                port: parsedUrl.port || 443,
+                path: parsedUrl.pathname + parsedUrl.search,
+                method: "POST",
+                headers: {
+                    "xi-api-key": this.apiKey,
+                    "Content-Type": "multipart/form-data; boundary=" + boundary,
+                    "Content-Length": body.length,
+                },
+            }, (response) => {
+                let responseData = "";
+                response.on("data", (chunk) => { responseData += chunk; });
+                response.on("end", () => {
+                    if (response.statusCode !== 200) {
+                        let errorMsg = "ElevenLabs STT error (status " + response.statusCode + ")";
+                        try {
+                            const parsed = JSON.parse(responseData);
+                            if (parsed.detail && parsed.detail.message) {
+                                errorMsg = parsed.detail.message;
+                            }
+                        } catch (_e) {
+                            // Use default error message
+                        }
+                        Monitor.warning("ElevenLabsService.speechToText API error", { statusCode: response.statusCode, error: errorMsg });
+                        return reject(Object.assign(new Error(errorMsg), { code: "ELEVENLABS_ERROR" }));
+                    }
+
+                    try {
+                        const parsed = JSON.parse(responseData);
+                        const text = parsed.text || "";
+                        Monitor.debug("ElevenLabsService.speechToText completed", { textLength: text.length });
+                        resolve(text);
+                    } catch (ex) {
+                        Monitor.exception(ex, "ElevenLabsService.speechToText failed to parse response");
+                        reject(Object.assign(new Error("Failed to parse STT response"), { code: "ELEVENLABS_ERROR" }));
+                    }
+                });
+            });
+
+            req.on("error", (err) => {
+                Monitor.exception(err, "ElevenLabsService.speechToText request failed");
+                reject(Object.assign(new Error("ElevenLabs STT request failed: " + err.message), { code: "ELEVENLABS_ERROR" }));
+            });
+
+            req.write(body);
+            req.end();
+        });
+    }
+
+    /**
      * Generates a configuration object for an ElevenAgent (Conversational AI).
      * This is a pure local method — no API call.
      * @param persona The system prompt / persona description for the agent
@@ -229,6 +328,172 @@ export class ElevenLabsService {
      * @param tools Array of tool definitions the agent can use
      * @returns ElevenAgentConfig ready to be sent to the Conversational AI API
      */
+    /**
+     * Creates a new voice using ElevenLabs Voice Design (text-to-voice).
+     * Generates a voice from a natural language description.
+     * @param name Display name for the voice
+     * @param description Natural language description (e.g., "Male, 50s, Eastern European accent, formal")
+     * @returns The generated voiceId
+     */
+    public async designVoice(name: string, description: string): Promise<string> {
+        const config = ElevenLabsConfig.getInstance();
+        const url = `${config.baseUrl}/v1/voice-generation/generate-voice`;
+
+        Monitor.info("ElevenLabsService.designVoice", { name, descLength: description.length });
+
+        return new Promise((resolve, reject) => {
+            const body = JSON.stringify({
+                voice_description: description,
+                text: `Hello, I am ${name}. It is a pleasure to make your acquaintance. I have much to share with you about my life and times.`,
+            });
+
+            const urlObj = new URL(url);
+            const req = HTTPS.request({
+                hostname: urlObj.hostname,
+                port: 443,
+                path: urlObj.pathname,
+                method: "POST",
+                headers: {
+                    "xi-api-key": config.apiKey,
+                    "Content-Type": "application/json",
+                    "Content-Length": Buffer.byteLength(body),
+                },
+            }, (response) => {
+                let responseData = "";
+                response.on("data", (chunk) => { responseData += chunk; });
+                response.on("end", () => {
+                    if (response.statusCode !== 200) {
+                        Monitor.warning("ElevenLabsService.designVoice API error", {
+                            statusCode: response.statusCode,
+                            error: responseData.substring(0, 200),
+                        });
+                        return reject(Object.assign(
+                            new Error("Voice Design failed (status " + response.statusCode + ")"),
+                            { code: "ELEVENLABS_ERROR" },
+                        ));
+                    }
+
+                    try {
+                        const parsed = JSON.parse(responseData);
+                        const voiceId = parsed.voice_id || "";
+                        if (!voiceId) {
+                            return reject(Object.assign(
+                                new Error("Voice Design returned no voice_id"),
+                                { code: "ELEVENLABS_ERROR" },
+                            ));
+                        }
+                        Monitor.info("ElevenLabsService.designVoice completed", { voiceId });
+                        resolve(voiceId);
+                    } catch (ex) {
+                        Monitor.exception(ex, "ElevenLabsService.designVoice parse failed");
+                        reject(Object.assign(new Error("Failed to parse Voice Design response"), { code: "ELEVENLABS_ERROR" }));
+                    }
+                });
+            });
+
+            req.on("error", (err) => {
+                Monitor.exception(err, "ElevenLabsService.designVoice request failed");
+                reject(Object.assign(new Error("Voice Design request failed: " + err.message), { code: "ELEVENLABS_ERROR" }));
+            });
+
+            req.write(body);
+            req.end();
+        });
+    }
+
+    /**
+     * Clones a voice using ElevenLabs Instant Voice Cloning (IVC).
+     * @param name Display name for the cloned voice
+     * @param audioBuffer Audio sample buffer (MP3/WAV, 1-2 min)
+     * @returns The cloned voiceId
+     */
+    public async cloneVoice(name: string, audioBuffer: Buffer): Promise<string> {
+        const config = ElevenLabsConfig.getInstance();
+        const url = `${config.baseUrl}/v1/voices/add`;
+
+        Monitor.info("ElevenLabsService.cloneVoice", { name, audioBytes: audioBuffer.length });
+
+        return new Promise((resolve, reject) => {
+            const boundary = "----FormBoundary" + Date.now().toString(16);
+            const parts: Buffer[] = [];
+
+            // Name field
+            parts.push(Buffer.from(
+                `--${boundary}\r\nContent-Disposition: form-data; name="name"\r\n\r\n${name}\r\n`,
+            ));
+
+            // Audio file
+            parts.push(Buffer.from(
+                `--${boundary}\r\nContent-Disposition: form-data; name="files"; filename="sample.mp3"\r\nContent-Type: audio/mpeg\r\n\r\n`,
+            ));
+            parts.push(audioBuffer);
+            parts.push(Buffer.from("\r\n"));
+
+            // Remove background noise
+            parts.push(Buffer.from(
+                `--${boundary}\r\nContent-Disposition: form-data; name="remove_background_noise"\r\n\r\ntrue\r\n`,
+            ));
+
+            // End boundary
+            parts.push(Buffer.from(`--${boundary}--\r\n`));
+
+            const body = Buffer.concat(parts);
+
+            const urlObj = new URL(url);
+            const req = HTTPS.request({
+                hostname: urlObj.hostname,
+                port: 443,
+                path: urlObj.pathname,
+                method: "POST",
+                headers: {
+                    "xi-api-key": config.apiKey,
+                    "Content-Type": "multipart/form-data; boundary=" + boundary,
+                    "Content-Length": body.length,
+                },
+            }, (response) => {
+                let responseData = "";
+                response.on("data", (chunk) => { responseData += chunk; });
+                response.on("end", () => {
+                    if (response.statusCode !== 200) {
+                        Monitor.warning("ElevenLabsService.cloneVoice API error", {
+                            statusCode: response.statusCode,
+                            error: responseData.substring(0, 500),
+                            audioBytes: audioBuffer.length,
+                        });
+                        return reject(Object.assign(
+                            new Error("Voice Clone failed (status " + response.statusCode + ")"),
+                            { code: "ELEVENLABS_ERROR" },
+                        ));
+                    }
+
+                    try {
+                        const parsed = JSON.parse(responseData);
+                        const voiceId = parsed.voice_id || "";
+                        if (!voiceId) {
+                            return reject(Object.assign(
+                                new Error("Voice Clone returned no voice_id"),
+                                { code: "ELEVENLABS_ERROR" },
+                            ));
+                        }
+                        Monitor.info("ElevenLabsService.cloneVoice completed", { voiceId });
+                        resolve(voiceId);
+                    } catch (ex) {
+                        Monitor.exception(ex, "ElevenLabsService.cloneVoice parse failed");
+                        reject(Object.assign(new Error("Failed to parse Voice Clone response"), { code: "ELEVENLABS_ERROR" }));
+                    }
+                });
+            });
+
+            req.on("error", (err) => {
+                Monitor.exception(err, "ElevenLabsService.cloneVoice request failed");
+                reject(Object.assign(new Error("Voice Clone request failed: " + err.message), { code: "ELEVENLABS_ERROR" }));
+            });
+
+            req.write(body);
+            req.end();
+        });
+    }
+
     public getAgentConfig(persona: string, voiceId: string, tools: ElevenAgentTool[]): ElevenAgentConfig {
         return {
             agent: {

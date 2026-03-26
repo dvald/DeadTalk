@@ -70,15 +70,3 @@ CREATE TABLE "users" (
 CREATE UNIQUE INDEX "ix_users_s_1" ON "users"("username_lower_case");
 CREATE UNIQUE INDEX "ix_users_s_2" ON "users"("email");
 CREATE INDEX "ix_users_s_3" ON "users"("role");
-
-CREATE TABLE "wallets" (
-    "id" VARCHAR(255) PRIMARY KEY,
-    "uid" VARCHAR(255),
-    "name" VARCHAR(255),
-    "address" VARCHAR(255),
-    "encrypted_key" TEXT,
-    "password_hash" VARCHAR(255),
-    "password_salt" VARCHAR(255)
-);
-
-CREATE INDEX "ix_wallets_s_1" ON "wallets"("uid");

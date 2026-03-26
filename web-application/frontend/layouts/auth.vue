@@ -13,7 +13,9 @@
             'overflow-auto',
             'py-10',
             'px-content-side-padding-mobile md:px-content-side-padding',
+            'relative',
         ]"
+        class="before:absolute before:inset-0 before:bg-[#0a0a0f]/80 before:z-0 [&>*]:relative [&>*]:z-10"
     >
         <div :class="['w-full', 'flex flex-col', 'items-center', 'gap-8 lg:gap-14']">
             <AppLogo

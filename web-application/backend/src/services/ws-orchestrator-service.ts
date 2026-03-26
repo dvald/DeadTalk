@@ -4,7 +4,9 @@
 
 import { Monitor } from "../monitor";
 import { WebsocketController } from "../controllers/websocket/websocket";
-import { SourceCardData, AgentSpeakingEvent, SourceCitedEvent, AgentFinishedEvent, SessionEndEvent } from "../models/ws-events";
+import {
+    SourceCardData, AgentSpeakingEvent, SourceCitedEvent, AgentFinishedEvent, SessionEndEvent,
+} from "../models/ws-events";
 
 /**
  * Active WebSocket session
@@ -117,7 +119,7 @@ export class WsOrchestratorService {
      * Emits an agent-speaking event with audio chunk and transcript.
      * @param sessionId The session ID
      * @param agentId The speaking agent's ID
-     * @param chunk Base64-encoded audio chunk
+     * @param chunk Base64-encoded audio payload (currently a full clip per response)
      * @param transcript The transcription text
      * @param audioTag Optional emotion/style tag
      */
@@ -175,4 +177,5 @@ export class WsOrchestratorService {
         this.broadcastToSession(sessionId, event);
         this.removeSession(sessionId);
     }
+
 }

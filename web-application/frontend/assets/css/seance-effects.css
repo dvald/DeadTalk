@@ -1,0 +1,292 @@
+/* Séance Effects — Dark mystical visual layer for DeadTalk */
+
+/* Gold glow utilities */
+.seance-glow {
+    box-shadow:
+        0 0 20px rgba(212, 168, 83, 0.15),
+        0 0 40px rgba(212, 168, 83, 0.05);
+}
+
+.seance-glow-strong {
+    box-shadow:
+        0 0 30px rgba(212, 168, 83, 0.3),
+        0 0 60px rgba(212, 168, 83, 0.1);
+}
+
+.seance-text-glow {
+    text-shadow: 0 0 20px rgba(212, 168, 83, 0.4);
+}
+
+/* Ethereal particle background (CSS-only, performant) */
+.seance-particles {
+    position: relative;
+    overflow: hidden;
+}
+
+.seance-particles::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image:
+        radial-gradient(1px 1px at 10% 20%, rgba(212, 168, 83, 0.4) 0%, transparent 100%),
+        radial-gradient(1px 1px at 25% 60%, rgba(212, 168, 83, 0.2) 0%, transparent 100%),
+        radial-gradient(1.5px 1.5px at 40% 15%, rgba(245, 215, 142, 0.3) 0%, transparent 100%),
+        radial-gradient(1px 1px at 55% 75%, rgba(212, 168, 83, 0.2) 0%, transparent 100%),
+        radial-gradient(1.5px 1.5px at 70% 35%, rgba(212, 168, 83, 0.35) 0%, transparent 100%),
+        radial-gradient(1px 1px at 85% 55%, rgba(245, 215, 142, 0.2) 0%, transparent 100%),
+        radial-gradient(1px 1px at 95% 80%, rgba(212, 168, 83, 0.3) 0%, transparent 100%);
+    animation: seance-drift 20s ease-in-out infinite;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.seance-particles > * {
+    position: relative;
+    z-index: 1;
+}
+
+@keyframes seance-drift {
+    0%,
+    100% {
+        transform: translateY(0) scale(1);
+        opacity: 0.5;
+    }
+    50% {
+        transform: translateY(-15px) scale(1.02);
+        opacity: 1;
+    }
+}
+
+/* Gold card border with hover glow */
+.seance-card-border {
+    border-color: rgba(212, 168, 83, 0.2);
+    transition: all 0.3s ease;
+}
+
+.seance-card-border:hover {
+    border-color: rgba(212, 168, 83, 0.5);
+    box-shadow: 0 0 20px rgba(212, 168, 83, 0.1);
+}
+
+/* Active element ethereal ring */
+.seance-active-ring {
+    box-shadow:
+        0 0 0 2px rgba(212, 168, 83, 0.4),
+        0 0 20px rgba(212, 168, 83, 0.15);
+}
+
+/* Radial gradient page background */
+.seance-bg {
+    background: radial-gradient(ellipse at 50% 0%, #1a1720 0%, #0a0a0f 70%);
+    min-height: 100vh;
+}
+
+/* Subtle gold divider */
+.seance-divider {
+    border-color: rgba(212, 168, 83, 0.15);
+}
+
+/* Pulsing glow for active agent */
+.seance-pulse {
+    animation: seance-pulse-anim 2s ease-in-out infinite;
+}
+
+@keyframes seance-pulse-anim {
+    0%,
+    100% {
+        box-shadow: 0 0 0 0 rgba(212, 168, 83, 0.3);
+    }
+    50% {
+        box-shadow: 0 0 0 8px rgba(212, 168, 83, 0);
+    }
+}
+
+/* ── Atmospheric effects (session portal) ─────────────── */
+
+/* Grain texture overlay — subtle noise for analog feel */
+.grain-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    pointer-events: none;
+    opacity: 0.03;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-repeat: repeat;
+    background-size: 256px 256px;
+}
+
+/* Fog gradient — subtle gold radial glow centered */
+.fog-gradient {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background: radial-gradient(circle at 50% 40%, rgba(242, 195, 107, 0.06) 0%, rgba(19, 19, 24, 0) 70%);
+}
+
+/* Ambient orbs — large blurred decorative circles */
+.ambient-orb {
+    position: fixed;
+    border-radius: 9999px;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.ambient-orb--primary {
+    top: 25%;
+    right: -5rem;
+    width: 24rem;
+    height: 24rem;
+    background: rgba(242, 195, 107, 0.05);
+    filter: blur(120px);
+}
+
+.ambient-orb--secondary {
+    bottom: 25%;
+    left: -5rem;
+    width: 16rem;
+    height: 16rem;
+    background: rgba(206, 193, 226, 0.05);
+    filter: blur(100px);
+}
+
+/* Ectoplasm wave — blurred pulsing blobs behind portrait */
+.ectoplasm-wave {
+    filter: blur(40px);
+    mix-blend-mode: screen;
+    will-change: transform, opacity;
+}
+
+/* Glassmorphism — frosted glass effect for floating panels */
+.glassmorphism {
+    background: rgba(42, 41, 47, 0.7);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(78, 70, 55, 0.15);
+}
+
+/* ── Landing page effects ──────────────────────────────── */
+
+/* Fog container — holds animated fog layers */
+.fog-container {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.fog-layer {
+    position: absolute;
+    width: 200%;
+    height: 100%;
+    background: radial-gradient(circle at 50% 50%, rgba(242, 195, 107, 0.08) 0%, transparent 70%);
+    filter: blur(80px);
+    animation: fog-drift 30s linear infinite;
+}
+
+@keyframes fog-drift {
+    from {
+        transform: translateX(-20%) translateY(-10%);
+    }
+    to {
+        transform: translateX(0%) translateY(0%);
+    }
+}
+
+/* Hero radial glow */
+.hero-glow {
+    background: radial-gradient(circle at 50% 50%, rgba(242, 195, 107, 0.12) 0%, rgba(10, 10, 12, 0) 70%);
+}
+
+/* Incantation text — glowing headline effect */
+.text-incantation {
+    text-shadow: 0 0 30px rgba(242, 195, 107, 0.25);
+    letter-spacing: -0.02em;
+}
+
+/* Spirit card — glass panel for persona cards */
+.spirit-card {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0.01) 100%);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(212, 168, 83, 0.12);
+}
+
+/* Card aura — hover radial glow behind card */
+.card-aura {
+    background: radial-gradient(circle at center, rgba(242, 195, 107, 0.15) 0%, transparent 80%);
+    opacity: 0;
+    transition: opacity 0.7s ease;
+}
+
+.spirit-card:hover .card-aura {
+    opacity: 1;
+}
+
+/* Slow pulse animation */
+.animate-pulse-slow {
+    animation: pulse-slow 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse-slow {
+    0%,
+    100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+/* Float animation */
+.animate-float {
+    animation: seance-float 6s ease-in-out infinite;
+}
+
+@keyframes seance-float {
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+/* Ectoplasm pulse keyframes */
+@keyframes ectoplasm-breathe {
+    0%,
+    100% {
+        transform: scale(1);
+        opacity: 0.15;
+    }
+    50% {
+        transform: scale(1.15);
+        opacity: 0.25;
+    }
+}
+
+@keyframes ectoplasm-breathe-alt {
+    0%,
+    100% {
+        transform: scale(1.05);
+        opacity: 0.1;
+    }
+    50% {
+        transform: scale(0.9);
+        opacity: 0.2;
+    }
+}
+
+@keyframes ectoplasm-breathe-slow {
+    0%,
+    100% {
+        transform: scale(0.95);
+        opacity: 0.12;
+    }
+    50% {
+        transform: scale(1.1);
+        opacity: 0.18;
+    }
+}

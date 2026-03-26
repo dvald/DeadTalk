@@ -175,6 +175,48 @@ export interface UserAdminPasswordChangeBadRequest {
     code: string;
 }
 
+export interface GenerateQuoteRequest {
+    /**
+     * Name of the historical figure
+     */
+    personaName: string;
+
+    transcript: ConversationEntry[];
+}
+
+export interface ConversationEntry {
+    /**
+     * "user" or "agent"
+     */
+    role: string;
+
+    /**
+     * Message text
+     */
+    text: string;
+
+    /**
+     * Unix timestamp in ms
+     */
+    timestamp?: number;
+}
+
+export interface GenerateQuoteResponse {
+    /**
+     * The generated memorable quote
+     */
+    quote?: string;
+}
+
+export interface GenerateQuoteError {
+    /**
+     * Error code:
+     *  - INVALID_INPUT: Missing or invalid input
+     *  - GENERATION_FAILED: LLM failed to generate quote
+     */
+    code: string;
+}
+
 export interface GlobalRolePermission {
     /**
      * Permission identifier
@@ -311,6 +353,260 @@ export interface UploadProfileImageResponse {
      * Uploaded image URL
      */
     url?: string;
+}
+
+export interface PersonaSummary {
+    /**
+     * Persona slug identifier
+     */
+    id?: string;
+
+    /**
+     * Display name
+     */
+    name?: string;
+
+    /**
+     * Birth-death years
+     */
+    era?: string;
+
+    /**
+     * Nationality
+     */
+    nationality?: string;
+
+    /**
+     * Profession / title
+     */
+    profession?: string;
+
+    /**
+     * Avatar image path
+     */
+    avatar?: string;
+
+    /**
+     * Portrait image path
+     */
+    image?: string;
+
+    /**
+     * Famous quote (English)
+     */
+    quote?: string;
+
+    /**
+     * Famous quote (Spanish)
+     */
+    quoteEs?: string;
+
+    /**
+     * Greeting message (English)
+     */
+    firstMessage?: string;
+
+    /**
+     * Greeting message (Spanish)
+     */
+    firstMessageEs?: string;
+}
+
+export interface PersonaEmotionalTrigger {
+    /**
+     * Emotional mode (e.g. "angry")
+     */
+    emotion?: string;
+
+    /**
+     * Trigger context for that emotion
+     */
+    trigger?: string;
+}
+
+export interface PersonaDetail {
+    /**
+     * Persona slug identifier
+     */
+    id?: string;
+
+    /**
+     * Display name
+     */
+    name?: string;
+
+    /**
+     * Birth-death years
+     */
+    era?: string;
+
+    /**
+     * Nationality
+     */
+    nationality?: string;
+
+    /**
+     * Profession / title
+     */
+    profession?: string;
+
+    /**
+     * Avatar image path
+     */
+    avatar?: string;
+
+    /**
+     * Portrait image path
+     */
+    image?: string;
+
+    /**
+     * Famous quote (English)
+     */
+    quote?: string;
+
+    /**
+     * Famous quote (Spanish)
+     */
+    quoteEs?: string;
+
+    /**
+     * Greeting message (English)
+     */
+    firstMessage?: string;
+
+    /**
+     * Greeting message (Spanish)
+     */
+    firstMessageEs?: string;
+
+    emotionalProfile?: PersonaEmotionalTrigger[];
+
+    searchKeywords?: string[];
+}
+
+export interface PersonaNotFoundError {
+    /**
+     * Error code:
+     *  - PERSONA_NOT_FOUND: Persona was not found
+     */
+    code: string;
+}
+
+export interface CharacterCreateBody {
+    /**
+     * Historical figure name
+     */
+    name: string;
+
+    /**
+     * Optional hints (era, profession, etc.)
+     */
+    hints?: string;
+
+    /**
+     * Optional base64 portrait image
+     */
+    photoBase64?: string;
+}
+
+export interface CharacterCreateResponse {
+    /**
+     * Persona unique identifier
+     */
+    id?: string;
+
+    /**
+     * Display name
+     */
+    name?: string;
+
+    /**
+     * Birth-death years
+     */
+    era?: string;
+
+    /**
+     * Nationality
+     */
+    nationality?: string;
+
+    /**
+     * Profession / title
+     */
+    profession?: string;
+
+    /**
+     * Portrait image (data URL or empty)
+     */
+    image?: string;
+
+    /**
+     * How the voice was created (cloned, designed, default)
+     */
+    voiceSource?: string;
+
+    /**
+     * ElevenLabs voice ID
+     */
+    voiceId?: string;
+
+    /**
+     * English greeting
+     */
+    firstMessage?: string;
+
+    /**
+     * Spanish greeting
+     */
+    firstMessageEs?: string;
+
+    /**
+     * Famous quote
+     */
+    quote?: string;
+
+    /**
+     * Always true for custom characters
+     */
+    isCustom?: boolean;
+}
+
+export interface CharacterSummary {
+    /**
+     * Persona unique identifier
+     */
+    id?: string;
+
+    /**
+     * Display name
+     */
+    name?: string;
+
+    /**
+     * Birth-death years
+     */
+    era?: string;
+
+    /**
+     * Profession / title
+     */
+    profession?: string;
+
+    /**
+     * Portrait image (data URL or empty)
+     */
+    image?: string;
+
+    /**
+     * How the voice was created (cloned, designed, default)
+     */
+    voiceSource?: string;
+
+    /**
+     * Always true for custom characters
+     */
+    isCustom?: boolean;
 }
 
 export interface ErrorResponse {

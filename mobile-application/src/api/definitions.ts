@@ -175,6 +175,48 @@ export interface UserAdminPasswordChangeBadRequest {
     code: string;
 }
 
+export interface GenerateQuoteRequest {
+    /**
+     * Name of the historical figure
+     */
+    personaName: string;
+
+    transcript: ConversationEntry[];
+}
+
+export interface ConversationEntry {
+    /**
+     * "user" or "agent"
+     */
+    role: string;
+
+    /**
+     * Message text
+     */
+    text: string;
+
+    /**
+     * Unix timestamp in ms
+     */
+    timestamp?: number;
+}
+
+export interface GenerateQuoteResponse {
+    /**
+     * The generated memorable quote
+     */
+    quote?: string;
+}
+
+export interface GenerateQuoteError {
+    /**
+     * Error code:
+     *  - INVALID_INPUT: Missing or invalid input
+     *  - GENERATION_FAILED: LLM failed to generate quote
+     */
+    code: string;
+}
+
 export interface GlobalRolePermission {
     /**
      * Permission identifier
@@ -313,466 +355,258 @@ export interface UploadProfileImageResponse {
     url?: string;
 }
 
-export interface ExplorerSearchInformationItem {
+export interface PersonaSummary {
     /**
-     * Account balance (ETH)
+     * Persona slug identifier
      */
-    balance?: number;
+    id?: string;
 
     /**
-     * Total transactions
+     * Display name
      */
-    totalTransactions?: number;
+    name?: string;
 
     /**
-     * True if address is a contract, false if not
+     * Birth-death years
      */
-    isContract?: boolean;
+    era?: string;
 
     /**
-     * Block number
+     * Nationality
      */
-    number?: number;
+    nationality?: string;
 
     /**
-     * Mix hash
+     * Profession / title
      */
-    mixHash?: string;
+    profession?: string;
 
     /**
-     * Parent hash
+     * Avatar image path
      */
-    parentHash?: string;
+    avatar?: string;
 
     /**
-     * sha3Uncles
+     * Portrait image path
      */
-    sha3Uncles?: string;
+    image?: string;
 
     /**
-     * Logs bloom
+     * Famous quote (English)
      */
-    logsBloom?: string;
+    quote?: string;
 
     /**
-     * Transactions root
+     * Famous quote (Spanish)
      */
-    transactionsRoot?: string;
+    quoteEs?: string;
 
     /**
-     * State root
+     * Greeting message (English)
      */
-    stateRoot?: string;
+    firstMessage?: string;
 
     /**
-     * Receipts root
+     * Greeting message (Spanish)
      */
-    receiptsRoot?: string;
-
-    /**
-     * Miner address
-     */
-    miner?: string;
-
-    /**
-     * Difficulty
-     */
-    difficulty?: number;
-
-    /**
-     * Total difficulty
-     */
-    totalDifficulty?: number;
-
-    /**
-     * Extra data
-     */
-    extraData?: string;
-
-    /**
-     * Block size
-     */
-    size?: number;
-
-    /**
-     * Gas limit
-     */
-    gasLimit?: number;
-
-    /**
-     * Gas used
-     */
-    gasUsed?: number;
-
-    /**
-     * Base fee per gas
-     */
-    baseFeePerGas?: number;
-
-    /**
-     * Block timestamp
-     */
-    timestamp?: number;
-
-    transactions?: string[];
-
-    /**
-     * Block hash
-     */
-    blockHash?: string;
-
-    /**
-     * Block number
-     */
-    blockNumber?: number;
-
-    /**
-     * Chain ID
-     */
-    chainId?: string;
-
-    /**
-     * From address
-     */
-    from?: string;
-
-    /**
-     * Gas
-     */
-    gas?: number;
-
-    /**
-     * Gas price
-     */
-    gasPrice?: number;
-
-    /**
-     * Max priority fee per gas
-     */
-    maxPriorityFeePerGas?: number;
-
-    /**
-     * Max fee per gas
-     */
-    maxFeePerGas?: number;
-
-    /**
-     * Block or transaction hash
-     */
-    hash?: string;
-
-    /**
-     * Transaction input
-     */
-    input?: string;
-
-    /**
-     * Nonce
-     */
-    nonce?: string;
-
-    /**
-     * To address
-     */
-    to?: string;
-
-    /**
-     * Transaction index
-     */
-    transactionIndex?: number;
-
-    /**
-     * Transaction type
-     */
-    type?: number;
-
-    /**
-     * Transaction value
-     */
-    value?: number;
-
-    /**
-     * y parity
-     */
-    yParity?: number;
-
-    /**
-     * V
-     */
-    v?: string;
-
-    /**
-     * R
-     */
-    r?: string;
-
-    /**
-     * S
-     */
-    s?: string;
+    firstMessageEs?: string;
 }
 
-export interface ExplorerSearchInformation {
+export interface PersonaEmotionalTrigger {
     /**
-     * Mode: account, block, transaction
+     * Emotional mode (e.g. "angry")
      */
-    mode: string;
+    emotion?: string;
 
-    info?: ExplorerSearchInformationItem;
+    /**
+     * Trigger context for that emotion
+     */
+    trigger?: string;
 }
 
-export interface BlockInformationMin {
+export interface PersonaDetail {
     /**
-     * Block number
+     * Persona slug identifier
      */
-    number?: number;
+    id?: string;
 
     /**
-     * Block hash
+     * Display name
      */
-    hash?: string;
+    name?: string;
 
     /**
-     * Miner address
+     * Birth-death years
      */
-    miner?: string;
+    era?: string;
 
     /**
-     * Block size
+     * Nationality
      */
-    size?: number;
+    nationality?: string;
 
     /**
-     * Timestamp
+     * Profession / title
      */
-    timestamp?: number;
+    profession?: string;
 
     /**
-     * Transactions length
+     * Avatar image path
      */
-    transactions?: number;
+    avatar?: string;
+
+    /**
+     * Portrait image path
+     */
+    image?: string;
+
+    /**
+     * Famous quote (English)
+     */
+    quote?: string;
+
+    /**
+     * Famous quote (Spanish)
+     */
+    quoteEs?: string;
+
+    /**
+     * Greeting message (English)
+     */
+    firstMessage?: string;
+
+    /**
+     * Greeting message (Spanish)
+     */
+    firstMessageEs?: string;
+
+    emotionalProfile?: PersonaEmotionalTrigger[];
+
+    searchKeywords?: string[];
 }
 
-export interface GetBlocks {
-    blocks: BlockInformationMin[];
-
+export interface PersonaNotFoundError {
     /**
-     * Continuation block number
+     * Error code:
+     *  - PERSONA_NOT_FOUND: Persona was not found
      */
-    continuationBlock?: number;
+    code: string;
 }
 
-export interface BlockInformation {
+export interface CharacterCreateBody {
     /**
-     * Block number
+     * Historical figure name
      */
-    number?: number;
+    name: string;
 
     /**
-     * Block hash
+     * Optional hints (era, profession, etc.)
      */
-    hash?: string;
+    hints?: string;
 
     /**
-     * Mix hash
+     * Optional base64 portrait image
      */
-    mixHash?: string;
-
-    /**
-     * Parent hash
-     */
-    parentHash?: string;
-
-    /**
-     * Nonce
-     */
-    nonce?: string;
-
-    /**
-     * sha3Uncles
-     */
-    sha3Uncles?: string;
-
-    /**
-     * Logs bloom
-     */
-    logsBloom?: string;
-
-    /**
-     * Transactions root
-     */
-    transactionsRoot?: string;
-
-    /**
-     * State root
-     */
-    stateRoot?: string;
-
-    /**
-     * Receipts root
-     */
-    receiptsRoot?: string;
-
-    /**
-     * Miner address
-     */
-    miner?: string;
-
-    /**
-     * Difficulty
-     */
-    difficulty?: number;
-
-    /**
-     * Total difficulty
-     */
-    totalDifficulty?: number;
-
-    /**
-     * Extra data
-     */
-    extraData?: string;
-
-    /**
-     * Block size
-     */
-    size?: number;
-
-    /**
-     * Gas limit
-     */
-    gasLimit?: number;
-
-    /**
-     * Gas used
-     */
-    gasUsed?: number;
-
-    /**
-     * Base fee per gas
-     */
-    baseFeePerGas?: number;
-
-    /**
-     * Block timestamp
-     */
-    timestamp?: number;
-
-    transactions?: string[];
+    photoBase64?: string;
 }
 
-export interface AccountInformation {
+export interface CharacterCreateResponse {
     /**
-     * Account balance
+     * Persona unique identifier
      */
-    balance?: number;
+    id?: string;
 
     /**
-     * Total transactions
+     * Display name
      */
-    totalTransactions?: number;
+    name?: string;
 
     /**
-     * True if address is a contract, false if not
+     * Birth-death years
      */
-    isContract?: boolean;
+    era?: string;
+
+    /**
+     * Nationality
+     */
+    nationality?: string;
+
+    /**
+     * Profession / title
+     */
+    profession?: string;
+
+    /**
+     * Portrait image (data URL or empty)
+     */
+    image?: string;
+
+    /**
+     * How the voice was created (cloned, designed, default)
+     */
+    voiceSource?: string;
+
+    /**
+     * ElevenLabs voice ID
+     */
+    voiceId?: string;
+
+    /**
+     * English greeting
+     */
+    firstMessage?: string;
+
+    /**
+     * Spanish greeting
+     */
+    firstMessageEs?: string;
+
+    /**
+     * Famous quote
+     */
+    quote?: string;
+
+    /**
+     * Always true for custom characters
+     */
+    isCustom?: boolean;
 }
 
-export interface TransactionInformation {
+export interface CharacterSummary {
     /**
-     * Block hash
+     * Persona unique identifier
      */
-    blockHash?: string;
+    id?: string;
 
     /**
-     * Block number
+     * Display name
      */
-    blockNumber?: number;
+    name?: string;
 
     /**
-     * Chain ID
+     * Birth-death years
      */
-    chainId?: string;
+    era?: string;
 
     /**
-     * From address
+     * Profession / title
      */
-    from?: string;
+    profession?: string;
 
     /**
-     * Gas
+     * Portrait image (data URL or empty)
      */
-    gas?: number;
+    image?: string;
 
     /**
-     * Gas price
+     * How the voice was created (cloned, designed, default)
      */
-    gasPrice?: number;
+    voiceSource?: string;
 
     /**
-     * Max priority fee per gas
+     * Always true for custom characters
      */
-    maxPriorityFeePerGas?: number;
-
-    /**
-     * Max fee per gas
-     */
-    maxFeePerGas?: number;
-
-    /**
-     * Transaction hash
-     */
-    hash?: string;
-
-    /**
-     * Transaction input
-     */
-    input?: string;
-
-    /**
-     * Nonce
-     */
-    nonce?: string;
-
-    /**
-     * To address
-     */
-    to?: string;
-
-    /**
-     * Transaction index
-     */
-    transactionIndex?: number;
-
-    /**
-     * Transaction type
-     */
-    type?: number;
-
-    /**
-     * Transaction value
-     */
-    value?: number;
-
-    /**
-     * y parity
-     */
-    yParity?: number;
-
-    /**
-     * V
-     */
-    v?: string;
-
-    /**
-     * R
-     */
-    r?: string;
-
-    /**
-     * S
-     */
-    s?: string;
+    isCustom?: boolean;
 }
 
 export interface ErrorResponse {

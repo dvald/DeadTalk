@@ -41,20 +41,6 @@ export type AppEventsMap = {
     "loaded-locale": (locale: string) => void;
 
     /**
-     * Event sent when the wallets list changes
-     * You can obtain it via WalletsController
-     */
-    "wallet-list-changed": () => void;
-
-    /**
-     * Event sent when the selected wallet changes
-     * @param id The wallet ID
-     * @param address The wallet address
-     * @param name The wallet name
-     */
-    "current-wallet-changed": (id: string, address: string, name: string) => void;
-
-    /**
      * Event sent when the theme changes
      * @param theme The theme name
      */

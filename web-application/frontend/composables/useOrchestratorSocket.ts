@@ -27,7 +27,13 @@ export function useOrchestratorSocket() {
     });
 
     // VueUse WebSocket (auto-imported by @vueuse/nuxt)
-    const { status, data, send: wsSend, open, close } = useWebSocket(wsUrl, {
+    const {
+        status,
+        data,
+        send: wsSend,
+        open,
+        close,
+    } = useWebSocket(wsUrl, {
         autoReconnect: {
             retries: 5,
             delay: 2000,
@@ -48,7 +54,8 @@ export function useOrchestratorSocket() {
     const lastAudioChunk = ref<{ agentId: string; chunk: string } | null>(null);
     const sessionEnded = ref(false);
     const sessionEndReason = ref<string>("");
-
+    const userTranscriptText = ref<string>("");
+    const agentErrorMessage = ref<string>("");
     // Parse incoming messages
     watch(data, (raw) => {
         if (!raw) return;
@@ -59,6 +66,7 @@ export function useOrchestratorSocket() {
         } catch {
             return;
         }
+        console.log("[WS] received:", msg.event);
 
         switch (msg.event) {
             case "hello":
@@ -108,7 +116,7 @@ export function useOrchestratorSocket() {
                     const state = agentStates.value.get(msg.agentId);
                     if (state) {
                         state.speaking = false;
-                        state.audioTag = "";
+                        // Keep audioTag — the frontend clears it when audio playback actually ends
                         agentStates.value.set(msg.agentId, state);
                         agentStates.value = new Map(agentStates.value);
                     }
@@ -119,6 +127,14 @@ export function useOrchestratorSocket() {
                 sessionEnded.value = true;
                 sessionEndReason.value = msg.reason;
                 currentSessionId.value = null;
+                break;
+
+            case "user-transcript":
+                userTranscriptText.value = (msg as any).text || "";
+                break;
+
+            case "agent-error":
+                agentErrorMessage.value = (msg as any).message || "Unknown error";
                 break;
         }
     });
@@ -147,7 +163,9 @@ export function useOrchestratorSocket() {
      * @param message The message object to send
      */
     function send(message: any) {
-        wsSend(JSON.stringify(message));
+        const json = JSON.stringify(message);
+        console.log("[WS] send:", message.type, "payload size:", json.length, "ws status:", status.value);
+        wsSend(json);
     }
 
     return {
@@ -166,6 +184,10 @@ export function useOrchestratorSocket() {
 
         // Sources
         sourcesHistory,
+
+        // Conversation state
+        userTranscriptText,
+        agentErrorMessage,
 
         // Methods
         startSession,

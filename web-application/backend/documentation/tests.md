@@ -84,15 +84,13 @@ Example:
 "use strict";
 
 import assert from "assert";
-import Crypto from "crypto";
 import { APITester } from '../test-tools/api-tester';
 import { PreparedUser, TestUsers } from '../test-tools/models/users';
-import { ApiWallet } from '../test-tools/api-bindings/api-group-wallet';
-import { privateKeyToAddress } from '@asanrom/smart-contract-wrapper';
+import { ApiAuth } from '../test-tools/api-bindings/api-group-auth';
 
 
 // Test group
-describe("API/Wallets", () => {
+describe("API/Auth", () => {
     let testUser1: PreparedUser;
 
     before(async () => {
@@ -105,15 +103,9 @@ describe("API/Wallets", () => {
 
     // Tests
 
-    const randomPassword = Crypto.randomBytes(8).toString("hex");
-    let wallet1: string;
-
-    it('Should be able to create a wallet', async () => {
-        const r = await APITester.Test(ApiWallet.CreateWallet({ name: "Wallet 1", password: randomPassword }), testUser1.auth);
-
-        assert.equal(r.name, "Wallet 1");
-
-        wallet1 = r.id;
+    it('Should be able to get current user data', async () => {
+        const r = await APITester.Test(ApiAuth.Me(), testUser1.auth);
+        assert.equal(r.username, testUser1.username);
     });
 
     // ...
@@ -125,7 +117,6 @@ describe("API/Wallets", () => {
 In order to run the API tests, you need:
 
  - A test MongoDB database. You must specify its connection URL in the `TEST_DB_MONGO_URL` environment variable.
- - A test Ethereum node. You must specify the connection details in the [blockchain configuration](../CONFIG.md#blockchain-configuration).
 
 ### Skipping code for tests
 

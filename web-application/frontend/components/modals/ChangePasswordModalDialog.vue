@@ -6,7 +6,7 @@
         @update:modelValue="updateModelValue"
     >
         <ModalContent>
-            <ModalTitle :title="$t('Change wallet password')" />
+            <ModalTitle :title="$t('Change account password')" />
             <ChangePasswordForm
                 :requireCurrentPassword
                 :closeOnSubmit

@@ -23,10 +23,6 @@
         {
             "collection": "users",
             "field": "id"
-        },
-        {
-            "collection": "wallets",
-            "field": "id"
         }
     ],
     "indexes": [
@@ -76,16 +72,6 @@
             "fields": [
                 {
                     "name": "role",
-                    "dir": ""
-                }
-            ]
-        },
-        {
-            "collection": "wallets",
-            "unique": false,
-            "fields": [
-                {
-                    "name": "uid",
                     "dir": ""
                 }
             ]

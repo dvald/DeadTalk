@@ -211,48 +211,6 @@ FFmpeg is used to encode images and videos, if needed.
 | `FFPROBE_PATH` | Path to the `ffprobe` binary. |
 | `FFMPEG_PATH`  | Path to the `ffmpeg` binary.  |
 
-## Blockchain configuration
-
-### Ethereum node
-
-| Variable                   | Description                                                    |
-| -------------------------- | -------------------------------------------------------------- |
-| `BLOCKCHAIN_NODE_PROTOCOL` | Protocol to use to connect to the node. Can be `http` or `ws`. |
-| `BLOCKCHAIN_NODE_RPC_URL`  | JSON-RPC connection URL. Example: `http://localhost:8545`      |
-
-### Private keys
-
-| Variable              | Description                                                                             |
-| --------------------- | --------------------------------------------------------------------------------------- |
-| `BLOCKCHAIN_PK_ADMIN` | Administrator private key to use for the platform to interact with the smart contracts. |
-
-### Smart contracts
-
-Set the smart contract addresses after you deployed the smart contracts.
-
-| Variable                        | Description                                   |
-| ------------------------------- | --------------------------------------------- |
-| `CONTRACT_ADDR_ExampleContract` | Smart contract address for: `ExampleContract` |
-
-### Event synchronization
-
-The event synchronization system is meant to scan the blockchain, find events and index them in the database.
-
-Make sure to enable it only for a single server, if you have multiple, to prevent collisions.
-
-| Variable                      | Description                                                                           |
-| ----------------------------- | ------------------------------------------------------------------------------------- |
-| `BLOCKCHAIN_SYNC`             | Can be `YES` or `NO`. Set it to `YES` to enable event synchronization.                |
-| `BLOCKCHAIN_SYNC_FIRST_BLOCK` | First block to synchronize. Normally set to 0. Use it to skip blocks for long chains. |
-| `BLOCKCHAIN_SYNC_RANGE`       | Max number of blocks to synchronize in a single step.                                 |
-| `BLOCKCHAIN_SYNC_TIME`        | Expected block time in milliseconds in order to wait for more blocks.                 |
-
-If you want to reset the synchronized event data, run the following command:
-
-```sh
-npm run reset-blockchain-sync
-```
-
 ## Tests
 
 | Variable            | Description                                                                               |

@@ -5,6 +5,7 @@ import withNuxt from "./.nuxt/eslint.config.mjs";
 
 export default withNuxt({
     rules: {
+        "vue/html-self-closing": ["warn", { html: { void: "any" } }],
         "vue/attribute-hyphenation": "off",
         "vue/no-multiple-template-root": "off",
         "vue/require-default-prop": "off",

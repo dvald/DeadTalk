@@ -73,18 +73,34 @@ export class FirecrawlService {
                 try {
                     const parsed = JSON.parse(body);
 
+                    Monitor.debug("FirecrawlService.search raw response shape", {
+                        success: parsed.success,
+                        dataType: typeof parsed.data,
+                        dataIsArray: Array.isArray(parsed.data),
+                        dataKeys: parsed.data && typeof parsed.data === "object" && !Array.isArray(parsed.data) ? Object.keys(parsed.data) : [],
+                    });
+
                     if (response.statusCode !== 200 || !parsed.success) {
                         const errorMsg = parsed.error || "Unknown Firecrawl error (status " + response.statusCode + ")";
                         Monitor.warning("FirecrawlService.search API error", { statusCode: response.statusCode, error: errorMsg });
                         return reject(Object.assign(new Error(errorMsg), { code: "FIRECRAWL_ERROR" }));
                     }
 
-                    const results: FirecrawlSearchResult[] = (parsed.data || []).map((item: any) => {
+                    // Firecrawl v2 search returns data as { web: [...], images: [...], news: [...] }
+                    // or as a flat array in older versions. Handle both formats.
+                    let items: any[] = [];
+                    if (Array.isArray(parsed.data)) {
+                        items = parsed.data;
+                    } else if (parsed.data && Array.isArray(parsed.data.web)) {
+                        items = parsed.data.web;
+                    }
+
+                    const results: FirecrawlSearchResult[] = items.map((item: any) => {
                         return {
                             url: item.url || "",
-                            title: (item.metadata && item.metadata.title) || "",
-                            description: (item.metadata && item.metadata.description) || "",
-                            markdown: item.markdown || "",
+                            title: item.title || (item.metadata && item.metadata.title) || "",
+                            description: item.description || (item.metadata && item.metadata.description) || "",
+                            markdown: item.markdown || item.description || "",
                         };
                     });
 
